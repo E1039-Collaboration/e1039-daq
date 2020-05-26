@@ -1,0 +1,4 @@
+Start sending statisitics...
+>>>>>> rcClient(Transition): Got the request to configure
+mismatch in namespace activate/deactivate operations0x1ec499a0 (ROC): mismatch in namespace activate
+/deactivate operations0x1eb19ee0 (pthr6): memPartFree: invalid block 0x10088086 in partition 0x284ca

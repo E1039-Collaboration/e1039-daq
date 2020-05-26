@@ -1,0 +1,51 @@
+Written by Kaz - 1/3/2013
+
+Usage:  E906FFT <ET station name>
+The ET station name can be anything EXCEPT Sea2sc, which is used by CODA.
+
+This code needs to:
+1.  keep the ETspy station BEFORE the CODA station, as the CODA ET will keep the EOS event until the 50 event buffer is filled.  
+2.  set the ET station configuration to et_station_config_setblock(sconfig, ET_STATION_BLOCKING)
+
+
+E906FFT.C is the main code that is run.
+E906ET_netclient is the over-the-network ET spy code.  They are class objects called from E906FFT.
+ (a defunct E906ET existed for local ET spy but was not used.  see redmine's seaquest-daq repistory if you want to resurrect this)
+E906ScalerDAQ is the class where the duty factor calculation, FFT, file save, etc are performed.  The eventcounter is done by this class as well.   
+E906ScalerDAQ.C is the realtimemonitor script. When this is run, it outputs the ET datastream to an asci file.   In practice, the output should be redirected to  B.Dannowitz'.  
+
+You do need the various libet.so, libet.a, et.h, etc...so just copy
+this entire directory to whereever you like, and use it there.
+
+-----------------------------------------------------
+In PreCoda, the et_start options are:
+> et_start -h
+usage: et_start -v [-n events] [-s event_size] [-f file]
+
+-n events is the number of buffers available (default=300, as defined in et.h)
+-s event_size is the size of a buffer in bytes (default=1000, as defined in et.h)
+-f file is the name of the et system (default=et_sys_Sea2, under /tmp)
+
+The ET System works as follows:
+
+The ET has a set number of "events" (or buffers) available at startup.  This is user-defineable. 
+For each user (such as CODA or ETSpy) that tries to use the ET system, a station can be created.  More than one user can connect to a station, but for our purpose, we'll create a station for each user.  
+There is an inherent station called GrandCentral that is created by the ET system.  As events are filled, these buffers are passed from one station to another.  In our case, the events go from GrandCentral_station ==> CODA_station ==> ETSpy_station.  After the last station processes the event, the buffer is freed and recycled to GrandCentral.  Therefore, if ETSpy takes a long time to process its events while more data are coming in, we may end up using all the available buffers and create pileup on the front-end (which will appear as deadtime).  There are several work-arounds for this:
+1.  We can set a prescale for each station (default = 1).
+2.  We can set a station to NONBLOCKING mode, which will force the station to NOT block the incoming flow of events.  However, if the event rate > process rate, then that station will miss events.
+3.  We can increase the number of buffers available in GrandCentral in order to absorb all the events that come in the 5 second spill.
+
+We will opt for the 3rd option, as it will allow CODA to process events in real-time (or at least as quickly as it can) AND allow the ETSpy to grab all events.  In this running mode, pileup will happen AFTER the CODA_station (technically, it will occur in the output list of CODA_station), which means CODA will grab events and output to ER/EB at its maximum rate, while ETSpy will play catch-up during the 55second downtime. 
+
+
+So if one calculates the event rate to be 2kHz, that's ~10k events over 5 seconds.  One can do change one line in PreCoda to:
+
+et_start -v -n 40000
+
+Keep your eye on memory usage.  
+------------------------------------------------------
+
+
+Therefore, in our case, the flow of data is as follows:
+ROC -> Grand Central -> CODA ET station -> E906FFT ET station --> back to Grand Central
+So EB and ER grab the incoming data from the CODA ET station first, and there will be enough event buffers for this station to absorb an entire 5 seconds of data such that even if the E906FFT station is slow, the resulting pileup will not cause the CODA ET station to miss any events OR slowdown in grabbing data.  

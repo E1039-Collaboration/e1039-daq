@@ -1,0 +1,20 @@
+v1495Init(0x04000000, 0x100000, 9);
+v1495Reload(0);
+v1495Reload(1);
+v1495Reload(2);
+v1495Reload(3);
+v1495Reload(4);
+v1495Reload(5);
+v1495Reload(6);
+v1495Reload(7);
+v1495Reload(8);
+v1495Run(0);
+v1495Run(1);
+v1495Run(2);
+v1495Run(3);
+v1495Run(4);
+v1495Run(5);
+v1495Run(6);
+v1495Run(7);
+v1495Run(8);
+

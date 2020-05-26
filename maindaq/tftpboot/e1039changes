@@ -1,0 +1,302 @@
+ROC2
+# E1039 
+ROC2
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.22:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme2.fnal.gov s=/home/e1039daq/tftpboot/roc2_5500.boot
+
+ROC1 (ROCe906)
+# E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.21:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme1.fnal.gov s=/home/e1039daq/tftpboot/roc1_5500.boot
+
+ROC9
+# E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.29:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme9.fnal.gov s=/home/e1039daq/tftpboot/roc9_5500.boot
+
+ROC7
+# E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.27:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme7.fnal.gov s=/home/e1039daq/tftpboot/roc7_5500.boot
+
+ROC5
+# E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.25:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme5.fnal.gov s=/home/e1039daq/tftpboot/roc5_5500.boot
+
+ROC13
+# E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.33:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme13.fnal.gov s=/home/e1039daq/tftpboot/roc13_5500.boot
+
+ROC4
+# E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.24:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme4.fnal.gov s=/home/e1039daq/tftpboot/roc4_5500.boot
+
+ROC8
+# E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.28:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme8.fnal.gov s=/home/e1039daq/tftpboot/roc8_5500.boot
+
+ROC12
+# E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.32:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme12.fnal.gov s=/home/e1039daq/tftpboot/roc12_5500.boot
+
+ROC11
+# E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.31:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme11.fnal.gov s=/home/e1039daq/tftpboot/roc11_5500.boot
+
+ROC3
+# E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.23:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme3.fnal.gov s=/home/e1039daq/tftpboot/roc3_5500.boot
+
+ ROC21
+# # E1039 
+$gei(0,0)e1039daq1.fnal.gov:/home/e1039daq/tftpboot/vx5500_v5 e=192.168.24.41:ffffff00 h=192.168.24.170 g=192.168.24.170 u=e1039daq f=0x28 tn=e906vme21.fnal.gov s=/home/e1039daq/tftpboot/roc21_5500.boot
+#
+
+
+rsh config:
+- /etc/hosts.equiv
+- /etc/hosts.allow
+- /etc/hosts
+- /etc/securetty
+- /etc/resolv.conf
+- ~/.rhosts
+- /etc/xinetd.d/rsh
+- /etc/xinetd.d/rlogin
+- /etc/xinetd.d/klogin
+- /etc/xinetd.d/tftp
+- /etc/xinetd.d/rsync
+- disable all firewalls
+- kill iptable /etc/init.d/iptable stop
+- disable virbr0:
+	- virsh net-list
+	- virsh net-destroy default
+	- virsh net-undefine default
+	- service libvirtd restart
+	- ifconfig
+- /etc/xen:
+	- emacs xend-config/sxp
+	- comment out network-script network-bridge
+- hostname configuration for coda
+	- /usr/local/coda/2.6.1/afecs/cool/e906/
+	- grep e906daq1 *  <== this needs to be changed to the correct hostname
+	- setup.xml, clientRegistration.xml, setup.xml.org
+
+****
+- resolv.conf -- search fnal.gov
+- /sbin/chkconfig afs off
+- /sbin/chkconfig iptables off
+- /sbin/chkconfig eklogin on
+- /sbin/chkconfig kshell on
+- /sbin/chkconfig rsync on
+- /etc/hosts -- remove e906daq7.fnal.gov from 127.0.0.1
+= /etc/hosts/sysconfig/network - add BROADCAST=192.168.24.255
+****
+
+
+/data2/e906daq/coda/2.6/extensions/e906 - coda readout lists (CRL)
+~/peekVX - starts VXWORKS debug port view
+~/PreCoda
+~/kcoda
+/data2/e906daq/coda/tftpboot/roc?.boot - bootfiles for the VME crates
+cedit - coda configuration application
+rcgui - starts runcontrol gui
+every time cedit is changes/saved, under rcgui, goto:
+options -> coda2 database -> runtype -> Sea2
+options -> coda2 database -> sessions -> Sea2
+Sessions-> Sea2
+Configurations-> cool
+Platform->connect
+
+latchRunTestHodo(0,21,0,1)
+don't use lvl1 to calibrate, it won't work since lvl1 only activates during
+runs.  calibrate with direct trigger and add the lvl1 delay
+
+st34
+0: 0x09100000
+
+
+ROC9
+e906vme9.fnal.gov
+19
+$CODA_BIN/coda_roc_rc3
+/data2/e906daq/coda/2.6/extensions/e906/vme_tir_latch2_st3_1.o mystring
+/data2/e906daq/coda/2.6/extensions/e906/event_list.o mystring
+
+
+reboot
+tsMemInit: ***** TS memory error ***** Program Value = 0xeff03, Read Back = 0xffffff
+
+
+ dsTdcInit(0x09100000,0x100000,4);
+
+ dsTdcReset(0);
+dsTdcReset(1);
+dsTdcReset(2);
+dsTdcReset(3);
+
+ dsTdcp[0]->csr2=0x10f01;
+ dsTdcp[1]->csr2=0x10f01;
+ dsTdcp[2]->csr2=0x10f01;
+ dsTdcp[3]->csr2=0x10f01;
+
+
+ dsTdcTrigDisable(0);
+
+  dsTdcFifoClear(0);
+
+  dsTdcEdgeMode(0,2);	
+
+  dsTdcTrigEnable(0);	
+	
+  dsTdcStatus(0);
+
+
+ dsTdcTrigDisable(1);
+  dsTdcFifoClear(1);
+  dsTdcEdgeMode(1,2);	
+  dsTdcTrigEnable(1);		
+  dsTdcStatus(1);
+
+
+ dsTdcTrigDisable(2);
+  dsTdcFifoClear(2);
+  dsTdcEdgeMode(2,2);	
+  dsTdcTrigEnable(2);		
+  dsTdcStatus(2);
+
+ dsTdcTrigDisable(3);
+  dsTdcFifoClear(3);
+  dsTdcEdgeMode(3,2);	
+  dsTdcTrigEnable(3);		
+  dsTdcStatus(3);
+
+  v1495Init(0x04400000,0x100000,5);
+
+   v1495Timeset(96,0,1000);v1495TimewindowSet(0,0xa);	v1495Timeset(96,1,1000);v1495TimewindowSet(1,0xa);	
+
+ v1495Timeset(96,2,1000);v1495TimewindowSet(2,0xa);v1495Timeset(96,3,1000);v1495TimewindowSet(3,0xa)	
+
+   v1495Timeset(96,4,1000);v1495TimewindowSet(4,0xa)	
+
+
+
+  dsTdcTrigEnable(0);
+  dsTdcTrigEnable(1);
+  dsTdcTrigEnable(2);
+  dsTdcTrigEnable(3);
+  v1495Run(0)
+  v1495Run(1)
+  v1495Run(2)
+  v1495Run(3)
+  v1495Run(4)
+
+
+
+    dsTdcTrigDisable(0);
+    dsTdcTrigDisable(1);
+    dsTdcTrigDisable(2);
+    dsTdcTrigDisable(3);
+
+  v1495RevisionRead(0);
+  v1495CommonstopRead(0);
+  v1495TDCcount(0);
+
+  v1495TDCReadout(0,0);
+
+  v1495RevisionRead(1);
+  v1495CommonstopRead(1);
+  v1495TDCcount(1);
+
+  v1495TDCReadout(1,);
+
+  v1495RevisionRead(2);
+  v1495CommonstopRead(2);
+  v1495TDCcount(2);
+
+  v1495TDCReadout(2,);
+
+  v1495RevisionRead(3);
+  v1495CommonstopRead(3);
+  v1495TDCcount(3);
+
+  v1495TDCReadout(3,);
+
+  v1495RevisionRead(4);
+  v1495CommonstopRead(4);
+  v1495TDCcount(4);
+  v1495TDCReadout(4,);
+
+
+
+
+  v1495TDCReadout(ii,iii);
+
+
+
+
+
+boot device          : gei
+unit number          : 0 
+processor number     : 0 
+host name            : e906daq1.fnal.gov
+file name            : /data2/e906daq/coda/tftpboot/vx5500_v5
+inet on ethernet (e) : 192.168.24.32:ffffff00
+host inet (h)        : 192.168.24.1
+
+gateway inet (g)     : 192.168.24.1
+user (u)             : e906daq
+flags (f)            : 0x20 
+target name (tn)     : e906vme12.fnal.gov
+startup script (s)   : /data2/e906daq/coda/tftpboot/roc12_5500.boot
+
+ROC9
+e906vme9.fnal.gov
+19
+$CODA_BIN/coda_roc_rc3
+/data2/e906daq/coda/2.6/extensions/e906/20111209_crlZS_BLK/vme_tir_tdc2_st2Chamber_ZSBLK.o mystring
+/data2/e906daq/coda/2.6/extensions/e906/event_list.o mystring
+
+
+ROC18 dead ARl 14
+Command configure  Payload count = 0
+
+
+boot device          : geisc
+unit number          : 0 
+processor number     : 0 
+host name            : e906daq1.fnal.gov
+file name            : /data2/e906daq/coda/tftpboot/vx6100_v4.1
+inet on ethernet (e) : 192.168.24.28:ffffff00
+host inet (h)        : 192.168.24.1
+gateway inet (g)     : 192.168.24.1
+user (u)             : e906daq
+flags (f)            : 0x20 
+target name (tn)     : e906vme8.fnal.gov
+startup script (s)   : /data2/e906daq/coda/tftpboot/roc8.boot
+
+For ROC15
+
+boot device          : gei
+unit number          : 0 
+processor number     : 0 
+host name            : e1039daq1
+file name            : /home/e1039daq/tftpboot/vx5500_v5
+inet on ethernet (e) : 192.168.24.35:ffffff00
+host inet (h)        : 192.168.24.170
+gateway inet (g)     : 192.168.24.170
+user (u)             : e1039daq
+flags (f)            : 0x28 
+target name (tn)     : e906vme15
+startup script (s)   : /home/e1039daq/tftpboot/roc15_5500.boot
+
+
+ROC25.crl (for ROC15, 2019-11-22 minjung)
+
+Original backup: ROC25.crl.bak.191122
+Modifications: #of L0, L1: 4 -> 2
+Array index, for loop index are adjusted accordingly.
+
+
+added "noahKnowsBest/vme_workdir" or "noahKnowsBest/pyTDC" in driver functions according to changed boot directory
+
+
+
+
+
+

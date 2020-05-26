@@ -1,0 +1,6 @@
+v1495firmware(0x90400000,"/home/e906daq/Daniel/440_2.rbf",0,0);
+v1495firmware(0x90500000,"/home/e906daq/Daniel/450_2.rbf",0,0);
+v1495Reload(4);
+v1495Reload(5);
+reboot;
+

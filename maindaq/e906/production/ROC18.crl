@@ -1,0 +1,236 @@
+#vme_tir_tdc2_st3PlusROC18_ZSBLK.crl
+#  Source for generic VME readout using a
+#  TJNAF trigger supervisor interface register (TIR)
+#  as a source for external interrupts
+#
+#    David Abbott, TJNAF 1996
+
+readout list VME1
+#maximum 1024,500
+#maximum 30000,3000
+#maximum 26849,60
+maximum 50000,150
+#maximum <buffer size per event(in bytes)> <number of buffer to create>
+vme readout
+ts control
+const NTDC=7
+const TDC64_on=0
+const TIR_ADDR = 0x0ed0
+const LATCH_ADDR =0x09100000
+int ii;
+# Define tsP pointer even if there is no TS in the Crate
+struct vme_ts2 *tsP;
+extern unsigned int vxTicks;
+int event_ty;
+int CSR2_A[NTDC];
+extern int bigendian_out;
+
+begin download
+
+  variable res
+
+# If the ROC is sending data to Little-Endian EB
+# e.g. a x86 Linux CPU then bigendian_out = 0.
+# Unless the ROC is also running on a Little-Endian
+# machine. Then set bigendian_out=1.
+  bigendian_out = 0;
+
+
+# Setup TIR
+#  tsInit(0,0);
+  tirInit(TIR_ADDR);
+
+ 
+ dsTdcInit(0x09100000,0x100000,NTDC);
+  
+  log inform "User Download TIR Executed"
+
+end download
+    
+begin prestart
+  log inform "User Prestart TIR Executed"
+  log inform "Entering User Trigger Prestart"
+
+  init trig source VME
+  link async trig source VME 1 to usrtrig and usrtrig_done
+  event type 1 then read VME 1
+
+ 
+  log inform "Ending TIR Prestart"
+#  vmetenable(1,0);
+%%
+for (ii=0;ii<NTDC;ii++){ 	  
+  dsTdcReset(ii);
+
+//  dsTdcp[ii]->csr2=0x10b03;	//delay time set, 64clock, delay 16*2*10=320ns  --new v1495 trigger
+
+if (TDC64_on==1){
+  CSR2_A[ii]=0x10b03;	//delay time set, 64clock, delay 0=0ns   ----new v1495 trigger
+ }else{	
+  CSR2_A[ii]=0x10b01;	//delay time set, 32clock, delay 2*2*10=40ns   ----new v1495 trigger	
+} 
+
+  dsTdcp[ii]->csr2=CSR2_A[ii];
+
+  dsTdcTrigDisable(ii);
+  dsTdcFifoClear(ii);
+  dsTdcEdgeMode(ii,2);	
+//  dsTdcTrigEnable(ii);		
+  dsTdcStatus(ii);
+}
+%%
+
+  log inform "Prestart  1"
+
+end prestart
+
+begin end
+  variable trig_count
+%%
+for (ii=0;ii<NTDC;ii++){ 	  
+  dsTdcTrigDisable(ii);
+
+}
+%%
+# Get Final Trigger Count
+  CDODISABLE(VME,1,0);
+
+  log inform "User End Executed VME TIR"
+
+end end
+
+begin pause
+
+  log inform "User Pause Executed" 
+  CDODISABLE(VME,1,0);
+
+end pause
+
+begin go
+  CDOENABLE(VME,1,0);
+  
+  log inform "Entering User Go"
+%%
+for (ii=0;ii<NTDC;ii++){ 	  
+//  dsTdcTrigDisable(ii);
+//  dsTdcFifoClear(ii);
+
+  dsTdcp[ii]->csr2= CSR2_A[ii];
+
+  dsTdcTrigEnable(ii);
+  dsTdcStatus(ii);
+}
+%%
+  log inform "Finish User Go"
+
+end go
+
+begin trigger usrtrig
+ 
+ variable ii,iii,  event_no,data_addr,retVal,maxWords,nWords,remBytes,itmp,ZeroFlag
+ long tmpdata[64];
+ event_ty = EVTYPE;
+ event_no = *rol->nevents;
+ rol->dabufp = (long *) 0;
+ open event type EVTYPE of BT_UI4
+ open bank EVTYPE of BT_UI4 
+
+
+#  output hex da000022
+#  rol->dabufp += 20;
+#  output hex da0000ff
+# logMsg("I got a trigger!!\n");
+
+  *rol->dabufp++ = vxTicks;
+#  *rol->dabufp++ = NTDC;
+
+%%	
+if (event_ty ==14){
+  for (ii=0;ii<NTDC;ii++){ 	  
+    dsTdcTrigDisable(ii);
+  }
+  for (ii=0;ii<NTDC;ii++){ 
+// data scaler flag=3, ignore = 0, latch=1, tdc=2,dsTDC2 flag=4, v1495=5,ZStdc=6,noZSWC=7,ZSWC=8
+    *rol->dabufp++ =0xe906f006;
+    *rol->dabufp++ = dsTdcBroadID(LATCH_ADDR,0x100000,ii);
+
+    data_addr=dsTdcBroadID(LATCH_ADDR,0x100000,ii);
+    data_addr=0x100+data_addr;
+  //  *rol->dabufp++ =	data_addr;
+    *rol->dabufp++ = dsTdcp[ii]->csr2;
+   *rol->dabufp++ = dsTdcd[ii]->data[0];	
+     maxWords =64; //8 clocks depth	
+     nWords=0;
+     ZeroFlag=0;
+
+     for(iii=1;iii<=4;iii++){// hodos
+//	retVal = sysVmeDmaSend(rol->dabufp,data_addr,(maxWords<<2), 0);
+	retVal = sysVmeDmaSend(tmpdata,data_addr,(maxWords<<2), 0);
+
+        //   logMsg("DMA transfer Initialization 0x%x\n",retVal,0,0,0,0,0);
+
+        if(retVal < 0) {
+          logMsg("ERROR in DMA transfer Initialization 0x%x\n",retVal,0,0,0,0,0);
+          *(rol->dabufp)++ = 0xda010bad;
+	} else {
+	  remBytes = sysVmeDmaDone(0,0);
+ 	  if(remBytes < 0) {                    //Error
+	     logMsg("ERROR during DMA transfer 0x%x\n",0,0,0,0,0,0);
+	     *(rol->dabufp)++ = 0xda020bad;
+	  }
+        }//if retVal 
+
+	for(itmp=0;itmp<64;itmp++){
+          if((tmpdata[itmp] ==0)&&(ZeroFlag!=0)){
+	    ZeroFlag=0;	
+	  } 
+          if(tmpdata[itmp] !=0){
+            if(ZeroFlag==0){
+              *rol->dabufp++ = 0xe906d000+nWords;
+              ZeroFlag=1;
+            }
+            *rol->dabufp++ = tmpdata[itmp];	
+          }
+	  nWords++;	 
+        }//loop itmp
+
+     }//for iii=8	
+    *rol->dabufp++ =0xe906c0da;	
+   }//for NTDC
+
+}
+%%
+ 
+
+ close bank
+ close event
+
+
+end trigger
+
+begin done usrtrig
+%%
+if(event_ty ==14){
+  for (ii=0;ii<NTDC;ii++){ 
+  //  dsTdcFifoClear(ii);
+    dsTdcTrigEnable(ii);
+  }
+}
+%%
+
+
+
+end done
+
+
+begin done
+
+# Acknowledge tir register
+  CDOACK(VME,1,0);
+end done
+
+begin status
+
+end status
+
+

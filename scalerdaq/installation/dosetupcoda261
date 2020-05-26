@@ -1,0 +1,105 @@
+#echo Setting up coda 2.6
+
+#
+# This is an example setup script for CODA 2.6
+# The user can edit this file and replace the following variables
+#
+#   CODA  - set to the path where you installed CODA 2.6
+#   my_msql_host           - hostname of Unix CPU running the msqld
+#   my_msql_database_dir   - path to location of msql database
+#   my_msql_database_name  - name of the EXPERIMENT database
+#   my_session_name        - name of a SEESION defined within EXPID
+#   my_username            - username for the login account
+#
+#  Other env variables that can be modified by the User
+#
+#  CODA_DIRECTORY  - User accessable directory for coda related files
+#  CODA_DATA       - Directory where event data will be stored
+#  COOL_HOME       - Location of the AFECS database
+#
+
+setenv CODA  /usr/local/coda/2.6.1
+source $CODA/.setup
+
+setenv MSQL_TCP_HOST e906sc3.fnal.gov
+setenv MSQL_HOME $CODA/common/rcdb
+setenv EXPID e906sc
+setenv my_msql_database_name e906sc
+setenv SESSION Sea2sc
+setenv KILL_CODA_SCRIPT 
+
+# Optional env variables
+setenv CODA_DIRECTORY $CODA
+setenv CODA_DATA /data1/codadata
+
+setenv JAVA_HOME /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.35/jre
+
+# CODA 3 Run Control
+setenv AFECS_HOME $CODA/afecs
+setenv CMSG_HOME  $CODA/cMsg
+setenv COOL_HOME $CODA/afecs/cool
+
+setenv RCREMLOG /home/e906daq/coda
+
+setenv CODA_DB_DRIVER com.imaginary.sql.msql.MsqlDriver
+setenv CODA_DB_URL jdbc:msql://${MSQL_TCP_HOST}:8101/$EXPID
+setenv CODA_DB_USER e906daq
+setenv CODA_DB_PASSWORD
+
+
+#Set CLASSPATH
+#----------------
+# New runcontrol 
+
+if ($?CLASSPATH) then
+  setenv CLASSPATH $AFECS_HOME/lib/afecs.jar:$CLASSPATH
+else
+  setenv CLASSPATH $AFECS_HOME/lib/afecs.jar
+endif
+
+# DalogMessage Browser
+setenv CLASSPATH $AFECS_HOME/lib/appframework-1.0.3.jar:$CLASSPATH
+setenv CLASSPATH $AFECS_HOME/lib/swing-worker-1.1.jar:$CLASSPATH
+
+# mSQL
+setenv CLASSPATH $AFECS_HOME/lib/msql-jdbc-2-0b5.jar:$CLASSPATH
+
+# Apache codec 
+setenv CLASSPATH $AFECS_HOME/lib/commons-codec-1.3.jar:$CLASSPATH
+
+# RDF 
+setenv CLASSPATH $AFECS_HOME/lib/jena.jar:$CLASSPATH
+
+# cMsg.
+# N.B. cMsg jar file is distributed with the AFECS, yet you can use cMsg.jar from your
+# own cMsg distribution. In this case you need to change CLASSPATH accordingly.
+setenv CLASSPATH $AFECS_HOME/lib/cMsg-2.0.jar:$CLASSPATH
+
+# Layout Manager for RcGui
+setenv CLASSPATH $AFECS_HOME/lib/AbsoluteLayout.jar:$CLASSPATH
+setenv CLASSPATH $AFECS_HOME/lib/swing-layout-1.0.jar:$CLASSPATH
+
+# JAS 
+setenv CLASSPATH $AFECS_HOME/lib/jas-plotter.jar:$CLASSPATH
+
+#SNMP
+setenv CLASSPATH $AFECS_HOME/lib/SNMP4J.jar:$CLASSPATH
+setenv CLASSPATH $AFECS_HOME/lib/mibble-parser-2.8.jar:$CLASSPATH
+
+# jloox
+setenv CLASSPATH $AFECS_HOME/lib/jloox20.jar:$CLASSPATH
+setenv CLASSPATH $AFECS_HOME/lib/jlayout30.jar:$CLASSPATH
+
+setenv PATH ${AFECS_HOME}/bin:${JAVA_HOME}/bin:$PATH
+
+setenv PCMSG_HOST          e906sc3.fnal.gov
+#setenv CMSG_PORT           5432
+#setenv CMSG_BROADCAST_PORT 7654
+#setenv RC_BROADCAST_PORT   6543
+
+#setenv CMSG_PORT           45000
+#setenv CMSG_BROADCAST_PORT 45000
+#setenv RC_BROADCAST_PORT   45200
+
+
+#echo done.

@@ -1,0 +1,30 @@
+#!/bin/tcsh
+
+kcoda  #kill all existing coda instances
+rm -f /tmp/et_* > /dev/null
+sleep 1
+
+
+echo "Start MSQL Daemon"
+xterm -cr red -bg red4 -fg white -sb -rightbar  -geometry 62x18+610+50 -sl 2500  -j -T "MSQL Daemon" -e msqld &
+
+
+echo 'reboot all the ROC before you push the "enter" botton'
+echo 'In case of you know that all the ROCs booted with "msqld" on, you do not have to reboot them.'
+set ROCreboot = $<
+
+
+echo "Start Event Transfer System"
+xterm -cr red -bg red4 -fg white -sb -rightbar -geometry 62x18+610+550 -sl 2500  -j  -T "Event Transfer System" -e 'et_start -v -s 40000 -n 1000'   &
+sleep 3
+
+echo "Start RCPlatform JVM"
+xterm -cr red -bg red4 -fg white -sb -rightbar -geometry 62x18+610+300 -sl 2500  -j  -T "RCPlatform" -e 'rcplatform' &
+sleep 1
+
+echo "Start ERe906sc"
+xterm -cr red -bg green4 -fg white -sb -rightbar  -geometry 62x18+200+50  -sl 2500 -j  -T "ERe906sc" -e 'coda_er_rc3 -i -s Sea2sc -n ERe906sc -t ER ' &
+sleep 1
+
+echo "Start EBe906"
+xterm -cr red -bg green4 -fg white -sb -rightbar -geometry 62x18+200+300 -sl 2500 -j -T "EBe906sc" -e 'coda_eb_rc3 -i -s Sea2sc -n EBe906sc -t CDEB'  &

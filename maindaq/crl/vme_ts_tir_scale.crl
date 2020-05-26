@@ -1,0 +1,443 @@
+#  Source for generic VME readout using a
+#  TJNAF trigger supervisor interface register (TIR)
+#  as a source for external interrupts
+#
+#    David Abbott, TJNAF 1996
+
+readout list TS2L
+
+# maximum <buffer size per event(in bytes)> <number of buffer to create>
+maximum 10000,5000
+vme readout
+ts control
+
+const TIR_ADDR = 0x0ed0
+const NFlushMax = 9000
+const blkSize = 6
+const PerEventRead = 1
+const PerEventScalarRead = 0
+
+extern unsigned int vxTicks;
+int event_no;
+int event_ty;
+extern int bigendian_out;
+
+# temporary data storage
+int nEvents = 0;
+int triggerswitch = 0xfff;
+#int triggerswitch = 0xe21;
+short spillFull=0;
+unsigned int trigTyps[63000];
+unsigned int scalarInfo[63000][10];
+unsigned int eventIDs[63000];
+
+# flush event control
+int nFlushes = 0;
+int BeamOn = 1;
+
+begin download
+  variable res
+
+  scale32Init(0x08010000, 0x10000, 3);
+  bigendian_out = 0;
+
+  # Setup TS and TIR
+  tsInit(0, 0);
+  tirInit(TIR_ADDR);
+
+  log inform "User Download Executed"
+end download
+
+begin prestart
+  variable ii
+  log inform "User Prestart 2 Executed"
+  log inform "Entering User Trigger Prestart"
+
+  init trig source VME
+  link async trig source VME 1 to usrtrig and usrtrig_done
+  event type 1 then read VME 1
+
+  log inform "Ending Trigger Supervisor Prestart"
+
+  rol->dabufp = (long *) 0;
+  UEOPEN(132, BT_UI4, 0);
+
+%%
+  /*trigger supervisor code tken from example ts2_util.crl*/
+  tsReset(0);                     /* Initialize */
+  tsCsr2Set(TS_CSR2_LOCK_ALL);    /* ROC Lock mode on all BRANCHES */
+
+  /***************************************************************************************************/
+  //tsEnableInput activates as follows (0xABC,0), where ABC represent 12 bits corresponding to the 12 inputs
+  // tsEnableInput(0xfff,0);       /* Enable all Trigger inputs in non-strobe mode
+  // EOS/BOS/NIM5/NIM4 321, MATRIX54321, NIM 5 as flush events
+  //   1   1    1   0  000        00000
+
+  //tsEnableInput(0xe20, 0);       /* Enable only NIM1/NIM5/start/stop inputs vme_ts_tir_scale.crlin non-strobe mode */
+  //tsEnableInput(0xe40, 0);       /* Enable only NIM2/NIM5/start/stop inputs in non-strobe mode */
+ // tsEnableInput(0xe60, 0);       /* Enable only NIM1/NIM2/NIM5/start/stop inputs in non-strobe mode */
+ //  tsEnableInput(0xe70, 0);       /* Enable only FPGA5/NIM1/NIM2/NIM5/start/stop inputs in non-strobe mode */
+
+  //tsEnableInput(0xe80, 0);       /* Enable only NIM3/NIM5/start/stop inputs in non-strobe mode */
+
+  //tsEnableInput(0xee0, 0);       /* Enable only NIM1/NIM2/NIM3/NIM5/start/stop inputs in non-strobe mode */
+
+  //tsEnableInput(0xe44, 0);       /* Enable only FPGA3/NIM2/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe48, 0);       /* Enable only FPGA4/NIM2/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe50, 0);       /* Enable only FPGA5/NIM2/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe41, 0);       /* Enable only FPGA1/NIM2/NIM5/start/stop inputs in non-strobe mode */
+
+  //tsEnableInput(0xe61, 0);       /* Enable only FPGA1/NIM1/NIM2/NIM5/start/stop inputs in non-strobe mode */
+
+  //tsEnableInput(0xe6f, 0); 	   /* Enable only FPGA1-4/NIM1-2/NIM5/start/stop  */
+  //tsEnableInput(0xe01, 0);       /* Enable only FPGA1/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe02, 0);       /* Enable only FPGA2/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe04, 0);       /* Enable only FPGA3/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe08, 0);       /* Enable only FPGA4/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe10, 0);       /* Enable only FPGA5/NIM5/start/stop inputs in non-strobe mode */
+
+  //TS+roc2+9+20tsEnableInput(0xe84, 0);       /* Enable only FPGA3/NIM3/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xf08, 0);       /* Enable only FPGA4/NIM4/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xf00, 0);       /* Enable only NIM4/NIM5/start/stop/ inputs in the non-strobe mode */
+  //tsEnableInput(0xe00, 0);       /* Enable only NIM5/start/stop inputs in non-strobe mode (use for pulser test)*/
+
+  //tsEnableInput(0xe20, 0);       /* Enable only NIM1/NIM5/start/stop inputs in non-strobe mode (alignment run)*/
+ // tsEnableInput(0xe80, 0);       /* Enable only NIM3/NIM5/start/stop inputs in non-strobe mode (random-RF run) */
+
+  //-- mixed triggers --/
+  //tsEnableInput(0xe03, 0);       /* Enable only FPGA12/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe07, 0);       /* Enable only FPGA123/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe0f, 0);       /* Enable only FPGA1234/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe1f, 0);       /* Enable only FPGA12345/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xe3f, 0);       /* Enable only FPGA12345/NIM1/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xebc, 0);       /* Enable only FPGA1345/NIM13/NIM5/start/stop inputs in non-strobe mode*/
+
+  // <<< NOMINAL SETTING >>>
+  // tsEnableInput(0xeff, 0);       /* Enable everything FPGA12345/NIM123/NIM5/start/stop inputs in non-strobe mode */
+ // tsEnableInput(0xf7f, 0);       /* Enable everything except NIM3  FPGA12345/NIM1234/NIM5/start/stop inputs in non-strobe mode */
+
+  //  tsEnableInput(0xfff, 0);       /* Enable everything FPGA12345/NIM1234/NIM5/start/stop inputs in non-strobe mode */
+  
+  // tsEnableInput(0xfef, 0);       /* Enable everything FPGA1234/NIM1234/NIM5/start/stop inputs in non-strobe mode */		
+
+   // tsEnableInput(0xe80, 0);       /*  Enable only NIM3/NIM5/start/stop inputs in non-strobe mode */
+  //tsEnableInput(0xeaf, 0);         /* Enable everything FPGA1234/NIM13/NIM5/start/stop inputs in non-strobe mode */
+
+    // triggerswitch = 0xfff;         /* Enable everything FPGA12345/NIM1234/NIM5/start/stop inputs in non-strobe mode */  
+     tsEnableInput(triggerswitch, 0);
+	  
+  /***************************************************************************************************/
+
+  
+  //tsRoc(7, 7, 0, 7);              /*current config is tsRoc(roc4+8+12,ROC13+7+5,,ROC9+TS+2)*/      ///// SpinQuest test,  6/15/2019.
+  // tsRoc(7, 15, 7, 7);             /*current config is tsRoc(roc4+8+12 train4,ROC13+7+11+5 train3,roc20+16+18 train2,ROC9+TS+2 train1)*/      ///// SpinQuest test,  6/15/2019. --enabled on 9/12/19
+   //tsRoc(7, 15, 7, 23);           /*current config is tsRoc(roc4+8+12 train4,ROC13+7+11+5 train3,roc20+16+18 train2,TS+ROC15+ROC9+2 train1)*/  ///// SpinQuest test,  6/15/2019. --enabled on 11/13/19
+   tsRoc(7, 15, 7, 63);           /*current config is tsRoc(roc4+8+12 train4,ROC13+7+11+5 train3,roc20+16+18 train2,TS+ROC15+ROC9+2+3+21 train1)*/  ///// SpinQuest test,  1/16/2020
+  // tsRoc(7, 15, 7, 7);           /*current config is tsRoc(roc4+8+12 train4,ROC13+7+11+5 train3,roc20+16+18 train2,TS+ROC9+2 train1)*/  ///// SpinQuest test,  6/15/2019. --enabled on 12/18/19
+
+
+
+
+  /* Synchronization programming */
+  tsSync(100);                      /* schedule Sync every 100th physics trigger */
+  tsCsr2Set(TS_CSR2_ENABLE_SYNC);   /* Enable Scheduled syncs */
+
+  /* Set nominal Level 2/3 timer values */
+  tsTimerWrite(TS_TIMER_L2A, 0x05);   /* Level 2 Timer 40ns/count */
+  tsTimerWrite(TS_TIMER_L3A, 0x05);   /* Level 3 Timer 40ns/count */
+
+  /* Front End Busy timer 40ns/count */
+  //tsTimerWrite(TS_TIMER_FB, 250);         /* 250 = 10 microsec */  //run1
+  tsTimerWrite(TS_TIMER_FB, 750);          /* 750 = 30 microsec */  //run2/3/4
+  //tsTimerWrite(TS_TIMER_FB, 30);          /* 750 = 30 microsec */  //run2/3/4
+  tsCsr2Set(TS_CSR2_ENABLE_FB_TIMER);      /* Enable FEB Timer */
+
+  /*  Construct TS memory data  ---  in the following model, all trigger patterns
+      that form the memory address are assigned to trigger class 1.  For those
+      trigger patterns with a single hit, the ROC code is set to be the trigger
+      input number.  Otherwise, the ROC code is set to 0xE.  All LEVEL 1 ACCEPT
+      signals are asserted for every pattern.  */
+  tsMemInit(0);
+
+
+  /* Fix special cases - both inputs 1 and 2 firing - type 13 (0xd) */
+  /* 0xa-bb-c-d  a:triggertype, bb:L1 accept output, c:useless, d:trigger class (from 1 to 3) */
+  tsMemWrite(1, 0xeffd3);
+  tsMemWrite(2, 0xeffd3);
+  tsMemWrite(4, 0xeffd3);
+  tsMemWrite(8, 0xeffd3);
+  tsMemWrite(16, 0xeffd3);
+
+  tsMemWrite(32, 0xeffd3);
+  tsMemWrite(64, 0xeffd3);
+  tsMemWrite(128, 0xeffd3);
+  tsMemWrite(256, 0xeffd3);
+  tsMemWrite(512, 0xeffd3);
+
+  for(ii = 512; ii < 1024; ii++) {  //flush event
+    tsMemWrite(ii, 0xa00d3);
+  }
+
+  for(ii = 1024; ii < 2048; ii++) {  // begin of spill
+    tsMemWrite(ii, 0xb00d3);
+  }
+  for(ii = 2048; ii < 4096; ii++) {  // end of spill
+    tsMemWrite(ii, 0xc00d3);
+  }
+
+  /* Set specific input prescale factors */
+  // Prescale factors are decimal. Only first 8 channels are prescalable.  ch1-4 prescalable up to 24bits, ch5-8 prescalable up to 16bits.
+  // Following channels, max value is 24 bits
+  tsPrescale(1, 1);      // fpga1 //do not use prescale = 0. nominal
+  tsPrescale(2, 1);      // fpga2 5000 for nominal
+  tsPrescale(3, 1);     // fpga3, default = 11
+  // tsPrescale(1, 100);      // fpga1 //do not use prescale = 0. nominal
+  // tsPrescale(2, 100);      // fpga2 5000 for nominal
+  // tsPrescale(3, 100);     // fpga3, default = 11
+  //tsPrescale(4, 40);  // fpga4  for trigger study
+  tsPrescale(4, 1);  // fpga4  for special trigger-efficiency study
+  //tsPrescale(4, 10);  // fpga4  set to 30000 for nominal, 1 for timing run, 2 for single muon run
+
+
+  // Following channels, max value is 16 bits
+  tsPrescale(5, 1);   // fpga5, default = 7000
+  // tsPrescale(5, 7000);   // fpga5, default = 7000
+   //tsPrescale(5, 1);   // fpga5, default = 7000
+
+
+ // tsPrescale(6, 30000);  // nim1, 30000 for normal run, 2 for alignment run, 7 for hodoscope efficiency run
+  tsPrescale(6, 1);  // nim1, 30000 for normal run, 2 for alignment run, 7 for hodoscope efficiency run
+  tsPrescale(7, 1);  // nim2 default = 4000
+  //tsPrescale(8, 500);    // nim3 default = 500
+ // tsPrescale(8, 5000);    // nim3 = 5 for random RF run
+   tsPrescale(8, 500);    // nim3 = 5 for random RF run
+  //tsPrescale(8, 1);    // nim3 = for hodo efficiency study
+  tsPrescale(9, 1);      // nim4
+
+///////////
+
+
+
+  *rol->dabufp++ = rol->pid;
+  *rol->dabufp++ = 0xe906f012;
+  *rol->dabufp++ = (tsP->trig & 0x1ffe) >> 1;
+
+  // plus one for the recorded Prescaled factor. Because the value is -1 in the  "tsPrescale" function
+  *rol->dabufp++ = (tsP->prescale[0] & 0xffffff) + 1;
+  *rol->dabufp++ = (tsP->prescale[1] & 0xffffff) + 1;
+  *rol->dabufp++ = (tsP->prescale[2] & 0xffffff) + 1;
+  *rol->dabufp++ = (tsP->prescale[3] & 0xffffff) + 1;
+  *rol->dabufp++ = (tsP->prescale[4] & 0xffff) + 1;
+  *rol->dabufp++ = (tsP->prescale[5] & 0xffff) + 1;
+  *rol->dabufp++ = (tsP->prescale[6] & 0xffff) + 1;
+  *rol->dabufp++ = (tsP->prescale[7] & 0xffff) + 1;
+%%
+
+  log inform "Ending Trigger Supervisor Prestart"
+  vmetenable(1, 0);
+  UECLOSE;
+end prestart
+
+begin end
+  variable trig_count
+
+  tsStop(1);
+  CDODISABLE(VME, 1, 0);
+
+  scale32Disable(0, 0);
+  scale32Disable(1, 0);
+  scale32Disable(2, 0);
+  log inform "User End Executed VME TS"
+end end
+
+begin pause
+  tsStop(1);
+  CDODISABLE(VME, 1, 0);
+  log inform "User Pause Executed"
+end pause
+
+begin go
+  log inform "Entering User Go"
+  CDOENABLE(VME, 1, 0);
+
+%%
+  tsGo(1);  /* Enable TS and L1 */
+
+  /* Scaler Prestart */
+  /* Enable scalers, set Clock readout mask, and clear all channels*/
+  scale32Enable(0, 0);
+  scale32CLR(0, 0, 1);
+  scale32Clear(0, 1);
+
+  scale32Enable(1, 0);
+  scale32CLR(1, 0, 1);
+  scale32Clear(1, 1);
+
+  scale32Enable(2, 0);
+  scale32CLR(2, 0, 1);
+  scale32Clear(2, 1);
+
+  tsScalAssign(0, 1, 2, 14, 15, 3);
+  tsScalClear(0x7ffff);
+%%
+end go
+
+begin trigger usrtrig
+  variable ii, jj, idx_max, tmp_fifocount
+  unsigned int tmp_tsfifo;
+
+  event_ty = EVTYPE;
+  event_no = *rol->nevents;
+
+  rol->dabufp = (long *) 0;
+  open event type EVTYPE of BT_UI4
+
+  *rol->dabufp++ = 0x11111111;
+  *rol->dabufp++ = 0x11111111;
+  *rol->dabufp++ = vxTicks;
+%%
+
+  tmp_tsfifo = tsP->trigData & 0xffff;
+  if(event_ty == 14 && BeamOn == 1) {
+    if(nEvents < 30000 && spillFull==0) {
+      eventIDs[nEvents] = event_no - 1;
+      trigTyps[nEvents] = tmp_tsfifo;
+
+      if(PerEventScalarRead != 0) {
+        scalarInfo[nEvents][0] = s32p[1]->scaler[_I_(20)]; //raw FPGA1
+        scalarInfo[nEvents][1] = s32p[1]->scaler[_I_(21)]; //raw FPGA2
+        scalarInfo[nEvents][2] = s32p[1]->scaler[_I_(22)]; //raw FPGA3
+        scalarInfo[nEvents][3] = s32p[1]->scaler[_I_(23)]; //raw FPGA4
+        scalarInfo[nEvents][4] = s32p[1]->scaler[_I_(24)]; //raw FPGA5
+        scalarInfo[nEvents][5] = s32p[0]->scaler[_I_(28)]; //afterinh FPGA1
+        scalarInfo[nEvents][6] = s32p[0]->scaler[_I_(29)]; //afterinh FPGA2
+        scalarInfo[nEvents][7] = s32p[0]->scaler[_I_(30)]; //afterinh FPGA3
+        scalarInfo[nEvents][8] = s32p[0]->scaler[_I_(31)]; //afterinh FPGA4
+        scalarInfo[nEvents][9] = s32p[0]->scaler[_I_(14)]; //afterinh FPGA5
+      }
+
+      ++nEvents;
+    }else{
+          if (spillFull==0){
+              tsEnableInput(0xe00, 0);       /*  Enable only NIM5/start/stop inputs in non-strobe mode */
+              logMsg("Event number is %i, exceed 30000.Throttle the trigger....\n",nEvents);
+          }
+          spillFull=1;
+    }
+
+    if(PerEventRead != 0) {
+      *rol->dabufp++ = 0xe906f00f;
+      *rol->dabufp++ = eventIDs[nEvents-1];
+      *rol->dabufp++ = trigTyps[nEvents-1];
+
+      if(PerEventScalarRead != 0) {
+        *rol->dabufp++ = 0xe906f014;
+        for(ii = 0; ii < 10; ++ii) *rol->dabufp++ = scalarInfo[nEvents-1][ii];
+      }
+    }
+  } else if(event_ty == 12) {  //EOS event
+    nFlushes = 0;
+    BeamOn = 0;
+    logMsg("Received EOS event! Will start off-beam transfer. \n");
+    // logMsg("triggerswitch is %i\n",triggerswitch);
+    if(spillFull!=0){
+      tsEnableInput(triggerswitch, 0);      
+      logMsg("Enable every trigger. \n");
+    }
+    spillFull=0;
+  } else if(event_ty == 11) {  //BOS event
+    nEvents = 0;
+    BeamOn = 1;
+    logMsg("Received BOS event! Will start on-beam transfer...\n");
+  } else if(event_ty == 10 && nFlushes < NFlushMax && BeamOn == 0) {
+    ++nFlushes;
+
+    if(nFlushes < NFlushMax) {
+      *rol->dabufp++ = 0xe906f00f;
+      if((nFlushes - 1)*blkSize < nEvents) {
+        idx_max = nFlushes*blkSize;
+        if(idx_max > nEvents) idx_max = nEvents;
+        *rol->dabufp++ = (idx_max - (nFlushes-1)*blkSize)*2 + 1;
+
+        for(ii = (nFlushes-1)*blkSize; ii < idx_max; ++ii) {
+          *rol->dabufp++ = trigTyps[ii];
+          *rol->dabufp++ = eventIDs[ii];
+        }
+      } else {
+        *rol->dabufp++ = 0;
+      }
+
+      if(PerEventScalarRead != 0) {
+        *rol->dabufp++ = 0xe906f014;
+        if((nFlushes - 1)*blkSize < nEvents) {
+          idx_max = nFlushes*blkSize;
+          if(idx_max > nEvents) idx_max = nEvents;
+          *rol->dabufp++ = (idx_max - (nFlushes-1)*blkSize)*11 + 1;
+
+          for(ii = (nFlushes-1)*blkSize; ii < idx_max; ++ii) {
+            for(jj = 0; jj < 10; ++jj) *rol->dabufp++ = scalarInfo[ii][jj];
+            *rol->dabufp++ = eventIDs[ii];
+          }
+        } else {
+          *rol->dabufp++ = 0;
+        }
+      }
+    } else {
+      *rol->dabufp++ = 0xe906f019;
+      if(nEvents == 30000) {
+        *rol->dabufp++ = 0xe906ae04;
+      } else {
+        *rol->dabufp++ = 0;
+      }
+    }
+    *rol->dabufp++ = 0xe906c0da;
+  }
+
+  //BOS/EOS scalar read
+  if(event_ty == 11 || event_ty == 12) {
+    scale32Disable(0, 0);
+    scale32Disable(1, 0);
+    scale32Disable(2, 0);
+
+    *rol->dabufp++ = 0xe906f003; // scaler flag
+    *rol->dabufp++ = 0;
+
+    for(ii = 0; ii < 32; ii++) {
+      *rol->dabufp++ = s32p[0]->scaler[_I_(ii)];
+    }
+
+    *rol->dabufp++ = 0xe906f003;
+    *rol->dabufp++ = 1;
+    for(ii = 0; ii < 32; ii++) {
+      *rol->dabufp++ = s32p[1]->scaler[_I_(ii)];
+    }
+
+    *rol->dabufp++ = 0xe906f003;
+    *rol->dabufp++ = 2;
+    for(ii = 0; ii < 32; ii++) {
+      *rol->dabufp++ = s32p[2]->scaler[_I_(ii)];
+    }
+
+    tsScalClear(0x7ffff);
+    for(ii = 0; ii < 3; ++ii) {
+      scale32Enable(ii, 0);
+      scale32Clear(ii, 1);
+    }
+  }
+%%
+
+  close event
+end trigger
+
+begin done usrtrig
+
+end done
+
+begin done
+  # Acknowledge tir register
+  CDOACK(VME, 1, 0);
+end done
+
+begin status
+
+end status

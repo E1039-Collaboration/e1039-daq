@@ -1,0 +1,15 @@
+# minute  Hour    Day of Month   Month              Day of Week        Command
+# (0-59)  (0-23)  (1-31)         (1-12 or Jan-Dec)  (0-6 or Sun-Sat)
+
+#this script checks that all the script to check that scaler DAQ programs are alive is alive
+#*         *       *              *                  *                  /home/e906daq/seaquest-daq/E906ScalerDAQ/scripts/start_master_loop_scalerDAQ_if_needed.sh
+
+*         *       *              *                  *                  /data2/e1039/daq/seaquest-daq/E906ScalerDAQ/scripts/start_master_loop_scalerDAQ_if_needed.sh
+
+# This job copies scalerdaq data files to /data3 storage
+0         *       *              *                  *                  rsync -auv /home/e906daq/data/codadata/ /data3/data/scalerDAQ/ > backup_log/backup.log
+
+# This job removes local scalerdaq data files when they are copied and decoded.
+30        1       *              *                  *                  /home/e906daq/chkAndRemov.csh > backup_log/remove.log
+
+0         */3     *              *                  *                  /home/e906daq/mem.sh

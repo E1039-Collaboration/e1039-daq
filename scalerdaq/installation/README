@@ -1,0 +1,31 @@
+To install:
+ 1.) 
+    Use InstallSoftware.py to install all necessary packages (at /software by default).  Follow script instructions.
+	- ./InstallSoftware.py --help    #make sure you know how the script works
+	- ./InstallSoftware.py --root
+	- ./InstallSoftware.py --etSpy   #must be done after ROOT
+	- ./InstallSoftware.py --coda
+
+
+ 2.)
+ - Be sure you have installed the configuration files for the host from seaquest-daq/Bootstrap
+	- specifically you must setup root and coda in .tcshrc
+ - make sure e906daq's shell is /bin/tcsh
+ - put PreCoda and kcoda at ~e906daq
+ - put dosetupcoda261 at ~e906daq
+	- make sure JAVA_HOME has a version that matches with what is installed.  change it to what is installed via yum (should be 1.6.X)
+		- there should be bin and lib directories inside JAVA_HOME.
+		- this must look like:
+			- /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.18
+		- and not
+			- /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.35/jre/
+		- if there is a jre directory with bin and lib inside of it, create links to them like so
+			- cd /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.18
+			- ln -s jre/bin
+			- ln -s jre/lib
+
+ 3.) 
+    Follow the instructions "For DAQ experts" in docdb 1033's "DAQ Subsystem Documentation" to edit run control configuration to use this host.
+    http://seaquest-docdb.fnal.gov:8080/cgi-bin/ShowDocument?docid=1033
+
+ 4.) Create 

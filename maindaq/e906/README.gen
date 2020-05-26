@@ -1,0 +1,67 @@
+November 2000
+
+  This patch contains files necessary to support a new
+type of CODA Readout list - The "Generic" List. It can
+easily be modified by the user to support a variety of
+hardware by customizing a set of trigger routines.
+
+This patch contains the files:
+
+         README.gen  :    This file
+         ccrl.SunOS  :    Solaris crl to c utility
+                           to be placed in $CODA_BIN
+                           and renamed to ccrl.
+         ccrl.Linux  :    RedHat 6.2 (x86) crl to c
+                           binary.
+         GEN_source.h:    header file to be placed in 
+                          $CODA/common/include. This
+                          file may have to be modified
+                          based on Users triggering
+                          requirements.
+
+         gen_list.crl:    Example Polling readout list
+                          using "general readout"
+
+     gen_int_list.crl:    Example Interrupt list using
+                          sis3610 Library.
+
+     sis3610Lib.c    :    SIS3610 I/O Latch library
+     sis3610.h
+     Makefile 
+
+     makelist.local  :    makelist script for building
+                          readout list object files
+                          using local headers and ccrl.
+                          (i.e. you do not have to 
+                           install ccrl and GEN_source.h
+                           in the CODA disribution)
+
+  Polling:
+
+  The current distribution supports triggering by polling
+from a generic address. The user must specify three values
+to the readout list. They incude:
+
+         The Polling address  : GENPollAddr
+         An Address Mask      : GENPollMask
+         A "value" indicating
+         a valid trigger      : GENPollValue
+
+The User must also provide code in their readout list to clear
+the trigger source and re-enable it if necessary.
+
+
+  Interrupts:
+
+     The GEN_source.h file has code to support triggers from 
+SIS3610 I/O Latch module as an interrupt source. Right now
+only one trigger input is supported (control input 1). A 
+Busy/Accept is gerated on control output 5.
+
+
+
+                             David Abbott
+                             Jefferson Lab DAQ Group
+                             abbottd@jlab.org
+                             (757) 269-7190
+

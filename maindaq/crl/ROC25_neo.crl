@@ -1,0 +1,393 @@
+#
+#  General User readout list
+#
+#    David Abbott, TJNAF 2000
+
+readout list VME1
+maximum 49152,400
+vme readout
+ts control
+
+const V1495TDC_LVL0_on = 0
+const V1495TDC_LVL1_on = 1
+const V1495TDC_LVL2_on = 0
+
+const PULSER_MODE_on = 1
+
+const V1495splatBlock_on = 0
+const NV1495L0 = 4;
+const NV1495L1 = 4;
+const NV1495L2 = 1;
+const NV1495 = 9;
+int V_DELAY[9];
+
+const TIR_ADDR = 0x0ed0;
+int ii;
+# Define tsP pointer even if there is no TS in the Crate
+struct vme_ts2 *tsP;
+
+extern unsigned int vxTicks;
+int event_ty;
+extern int bigendian_out;
+
+int event_no;
+int stoptime;
+int hits;
+int flag_firstEOS;
+int flag_firstBOS;
+
+int nEvents_W;
+int nEvents_R[2];
+int BEAMON;
+unsigned int m_stoptime[2][32500];
+unsigned int m_eventid[2][32500];
+
+begin download
+  variable res
+  # If the ROC is sending data to Little-Endian EB
+  # e.g. a x86 Linux CPU then bigendian_out = 0.
+  # Unless the ROC is also running on a Little-Endian
+  # machine. Then set bigendian_out=1.
+  bigendian_out = 0;
+
+  # Setup TIR
+  tirInit(TIR_ADDR);
+
+%%
+  v1495Init(0x04000000, 0x100000, NV1495);
+
+  for(ii = 0;ii < NV1495; ii++) {
+    v1495Reload(ii);
+  }
+%%
+  log inform "User Download Executed"
+
+end download
+
+begin prestart
+
+  log inform "User Prestart TIR Executed"
+  log inform "Entering User Trigger Prestart"
+
+  init trig source VME
+  link async trig source VME 1 to usrtrig and usrtrig_done
+  event type 1 then read VME 1
+
+
+  log inform "Ending TIR Prestart"
+
+  rol->dabufp = (long *) 0;
+  UEOPEN(132,BT_UI4,0);
+
+%%
+  *rol->dabufp++ = rol->pid;
+
+  // 256ns wide TDC windows
+  /*
+  V_DELAY[0]=0x0029;
+  V_DELAY[1]=0x0029;
+  V_DELAY[2]=0x0029;
+  V_DELAY[3]=0x0029;
+  V_DELAY[4]=0x0029;
+  V_DELAY[5]=0x0029;
+  V_DELAY[6]=0x0029;
+  V_DELAY[7]=0x0029;
+  V_DELAY[8]=0x0018;
+  */
+
+  // 128ns wide TDC windows
+  /*
+  V_DELAY[0]=0x012c;
+  V_DELAY[1]=0x012c;
+  V_DELAY[2]=0x012c;
+  V_DELAY[3]=0x012c;
+  V_DELAY[4]=0x012b;
+  V_DELAY[5]=0x012b;
+  V_DELAY[6]=0x012b;
+  V_DELAY[7]=0x012b;
+  V_DELAY[8]=0x0121;
+  */
+
+  // 64ns wide TDC windows
+  /*
+  V_DELAY[0]=0x022d;
+  V_DELAY[1]=0x022d;
+  V_DELAY[2]=0x022d;
+  V_DELAY[3]=0x022d;
+  V_DELAY[4]=0x022c;
+  V_DELAY[5]=0x022c;
+  V_DELAY[6]=0x022c;
+  V_DELAY[7]=0x022c;
+  V_DELAY[8]=0x0222;
+  */
+
+  V_DELAY[0]=0x0233;
+  V_DELAY[1]=0x0233;
+  V_DELAY[2]=0x0233;
+  V_DELAY[3]=0x0233;
+  V_DELAY[4]=0x0232;
+  V_DELAY[5]=0x0232;
+  V_DELAY[6]=0x0232;
+  V_DELAY[7]=0x0232;
+  V_DELAY[8]=0x0224;
+
+  // 32ns wide TDC windows
+  /*
+  V_DELAY[0]=0x032e;
+  V_DELAY[1]=0x032e;
+  V_DELAY[2]=0x032e;
+  V_DELAY[3]=0x032e;
+  V_DELAY[4]=0x032d;
+  V_DELAY[5]=0x032d;
+  V_DELAY[6]=0x032d;
+  V_DELAY[7]=0x032d;
+  V_DELAY[8]=0x0323;
+  */
+
+  if(PULSER_MODE_on == 1) {
+    V_DELAY[0]=0x002c;
+    V_DELAY[1]=0x002c;
+    V_DELAY[2]=0x002c;
+    V_DELAY[3]=0x002c;
+    V_DELAY[4]=0x002b;
+    V_DELAY[5]=0x002b;
+    V_DELAY[6]=0x0023;
+    V_DELAY[7]=0x0023;
+    V_DELAY[8]=0x001f;
+
+    v1495PatternSet(0, 2, 'p', 't', 0);
+    v1495PatternSet(0, 3, 'n', 'b', 0);
+    v1495ActivatePulser(2);
+    v1495ActivatePulser(3);
+  }
+
+  for(ii = 0; ii < NV1495; ii++) {
+    if(V1495TDC_LVL0_on != 0 && ii >= 0 && ii < 4) {
+      V_DELAY[ii] = V_DELAY[ii] + 0x1000;
+    }
+    if(V1495TDC_LVL1_on != 0 && ii >= NV1495L0 && ii < (NV1495L0+NV1495L1)) {
+      V_DELAY[ii] = V_DELAY[ii] + 0x1000;
+    }
+    if(V1495TDC_LVL2_on != 0 && ii == (NV1495L0+NV1495L1)) {
+      V_DELAY[ii] = V_DELAY[ii] + 0x1000;
+    }
+    if(V1495splatBlock_on != 0 && ii >= NV1495L0 && ii< (NV1495L0+NV1495L1)) {
+      V_DELAY[ii] = V_DELAY[ii] + 0x2000;
+    }
+
+    v1495Timeset(96, ii, 1000);
+    v1495TimewindowSet(ii,V_DELAY[ii]);
+
+    ///////Setting up the SplatBlock Counter
+    //   440 nonbend up
+    ///   v1495ScWrite(0,1,255);
+    ///   v1495ScWrite(0,2,255);
+    ///   v1495ScWrite(0,3,255);
+    ///   v1495ScWrite(0,4,255);
+    //   450 nonbend down
+    ///   v1495ScWrite(1,1,255);
+    ///   v1495ScWrite(1,2,255);
+    ///   v1495ScWrite(1,3,255);
+    ///   v1495ScWrite(1,4,255);
+    //   460 bend up
+    ///   v1495ScWrite(2,1,255);
+    ///   v1495ScWrite(2,2,255);
+    ///   v1495ScWrite(2,3,255);
+    ///   v1495ScWrite(2,4,255);
+    //   470 bend down
+    ///   v1495ScWrite(3,1,255);
+    ///   v1495ScWrite(3,2,255);
+    ///   v1495ScWrite(3,3,255);
+    ///   v1495ScWrite(3,4,255);
+    //   480 level 2
+    ///   v1495ScWrite(4,1,0);
+    ///   v1495ScWrite(4,2,0);
+    ///   v1495ScWrite(4,3,0);
+    ///   v1495ScWrite(4,4,0);
+    ///   v1495TimewindowSet(ii,0xa);
+    //    logMsg("V_DELAY %d=0x%x\n",ii,V_DELAY[ii]);
+  }
+%%
+
+  UECLOSE;
+  log inform "Prestart  1"
+
+end prestart
+
+begin end
+  variable trig_count
+%%
+  // incase one stops at middle of a spill
+  for(ii = 6; ii < 8; ii++) {
+    beamOff(ii);
+    v1495Read(ii);
+    nEvents_R[ii-6] = 0;
+  }
+%%
+
+  # Get Final Trigger Count
+  CDODISABLE(VME,1,0);
+  log inform "User End Executed VME TIR"
+
+end end
+
+begin pause
+
+  log inform "User Pause Executed"
+  CDODISABLE(VME,1,0);
+
+end pause
+
+begin go
+  CDOENABLE(VME,1,0);
+
+  log inform "Entering User Go"
+%%
+  for(ii = 0; ii < NV1495; ii++) {
+    v1495Run(ii);
+  }
+  flag_firstEOS = 1;
+  flag_firstBOS = 1;
+
+  // in case run starts in the middle of a spill
+  BEAMON = 1;
+  nEvents_W = 0;
+  if(V1495TDC_LVL1_on != 0) {
+    for(ii = 6; ii < 8; ii++) {
+      beamOn(ii);
+      nEvents_R[ii-6] = 0;
+    }
+  }
+
+%%
+  log inform "Finish User Go"
+
+end go
+
+begin trigger usrtrig
+
+  variable ii, iii, j, k, data_addr, retVal, maxWords, nWords, remBytes, TmpV1495Count
+  int TmpData, flag_header, events_left;
+
+  long tmpaddr1, tmpaddr2;
+
+  event_ty = EVTYPE;
+  event_no = *rol->nevents;
+
+  rol->dabufp = (long *) 0;
+  open event type EVTYPE of BT_UI4
+  open bank EVTYPE of BT_UI4
+
+  *rol->dabufp++ = vxTicks;
+%%
+  if(event_ty == 11) {      //  BOS EVENT
+	  if(V1495TDC_LVL1_on != 0 && (BEAMON == 0 || flag_firstBOS == 1)) {
+      for(ii = 6; ii < 8; ii++) {
+        beamOn(ii);
+        //event_id(ii, event_no);
+      }
+	  }
+
+    nEvents_W = 0;
+    BEAMON = 1;
+    if(flag_firstBOS != 0) flag_firstBOS = 0;
+  } else if(event_ty == 14 && BEAMON == 1) {     // Physics Event
+    if(V1495TDC_LVL1_on != 0) {
+      /*
+      // debug & DELAY!  purpose  7hits of 460 are written in physics event
+      // FOLLOWING 3 lines TEST for the crash problem
+      for(j = 0; j < 5; j++) {
+        *rol->dabufp++ = event_no - 1;
+      }
+      */
+//			for(j = 0; j < 6; j++) *rol->dabufp++ = v1495TDCReadout(6, j);
+
+      for(ii = 6; ii < 8; ii++) {
+        stoptime = v1495CommonstopRead(ii, 0x32, -5); //trigger timing information
+			  //stoptime  = v1495CommonstopRead(ii); //trigger timing information use the old driver to determine the start i in the loop
+
+			  v1495Run(ii);
+        m_stoptime[ii-6][nEvents_W] = stoptime;
+        m_eventid[ii-6][nEvents_W] = event_no - 1;
+		  }
+
+		  for(ii = 6; ii < 8; ii++) event_id(ii, event_no);   // event_id for next event
+		  if(nEvents_W < 32000) ++nEvents_W;
+	  }
+  } else if(event_ty == 12) {      //  EOS EVENT
+    /*
+	  //FOLLOWING 3 lines: TEST for the crash problem
+	  for(j = 0; j < 5; j++) {
+      *rol->dabufp++ = event_no - 1;
+	  }
+    */
+
+	  if(V1495TDC_LVL1_on != 0 && (BEAMON == 1 || flag_firstEOS == 1)) {
+      for(ii = 6; ii < 8; ii++) {
+        beamOff(ii);
+        v1495Read(ii);
+        nEvents_R[ii-6] = 0;
+      }
+    }
+
+    BEAMON = 0;
+    if(flag_firstEOS != 0) flag_firstEOS = 0;
+  } else if(event_ty == 10) {      // FLUSH EVENT
+    if(V1495TDC_LVL1_on != 0) {
+      for(ii = 6; ii < 8; ii++) {
+        //events_left = nEvents_W - nEvents_R[ii-6];
+	      //*rol->dabufp++  =  events_left;
+
+			  *rol->dabufp++ = 0xe906f005;
+				*rol->dabufp++ = v1495RevisionRead(ii);   // broad id read
+
+        if(flag_firstBOS != 0 && flag_firstEOS != 0) {
+          *rol->dabufp++ = 0x0;
+			  } else {
+          TmpV1495Count = v1495TDCReadout(ii, 2047);
+				  *rol->dabufp++ = TmpV1495Count;
+
+          if(TmpV1495Count < 0 || TmpV1495Count > 2000) {
+            *rol->dabufp++ = 0xe9060bad;
+          } else {
+            flag_header = 0;
+            for(k = 0; k < TmpV1495Count; k++) {
+              hits = v1495TDCReadout(ii, k);
+              if(flag_header > 0) flag_header--;
+
+              if((hits >> 15) != 0 && flag_header == 0) {
+                *rol->dabufp++ = 0x10000000 + hits;
+                *rol->dabufp++ = m_stoptime[ii-6][nEvents_R[ii-6]];
+                *rol->dabufp++ = m_eventid[ii-6][nEvents_R[ii-6]];
+
+                if(nEvents_R[ii-6] < 32000) nEvents_R[ii-6]++;
+
+                flag_header = 3;
+                continue;
+              }
+              *rol->dabufp++ = hits;
+            }
+				  }
+        }
+
+        v1495Read(ii);
+        //event_id(ii, event_no);
+		  }
+		  *rol->dabufp++ =0xe906c0da;
+	  }
+  }
+%%
+
+  close bank
+  close event
+end trigger
+
+begin done usrtrig
+end done
+
+begin done
+   CDOACK(VME,1,0);
+end done
+
+begin status
+end status

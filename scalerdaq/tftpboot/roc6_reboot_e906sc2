@@ -1,0 +1,30 @@
+boot device          : gei
+unit number          : 0 
+processor number     : 0 
+host name            : e906sc2.fnal.gov
+file name            : /home/e906daq/tftpboot/vx5500_v5
+inet on ethernet (e) : 192.168.24.151:ffffff00
+host inet (h)        : 192.168.24.12
+gateway inet (g)     : 192.168.24.12
+user (u)             : e906daq
+flags (f)            : 0x20 
+target name (tn)     : e906vmesa.fnal.gov
+startup script (s)   : /home/e906daq/tftpboot/roc6_5500_sc.boot
+
+Attached TCP/IP interface to gei0.
+Attaching network interface lo0... done.
+Loading... 1624976
+Starting at 0x100000...
+
+Attached TCP/IP interface to gei unit 0
+Attaching interface lo0...done
+Unable to add route to 192.168.24.0; errno = 0xffffffff.
+
+Adding 4755 symbols for standalone.
+...image...
+ Executing startup script /home/e906daq/tftpboot/roc6_5500_sc.boot ...
+# Boot file for CODA ROC 2.6.1
+.... much much more ...
+# PowerPC version
+
+

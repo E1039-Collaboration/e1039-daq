@@ -1,0 +1,173 @@
+# 
+#  General User readout list
+#
+#    David Abbott, TJNAF 2000
+
+readout list GEN_USER
+#maximum 1024,512
+maximum 4096,512
+general readout
+
+
+# A16 Address for SIS3610 Module
+const TRIG_ADDR=0x2800
+const TRIG_INPUT=1
+const S3610_MODE=1
+int count=0
+const NTDC=3
+
+extern int bigendian_out;
+extern unsigned int vxTicks;
+unsigned long testgrass=0;
+
+begin download
+
+  s3610Init(TRIG_ADDR,0,0); 
+#  s3600Init(0x11113800,0,0); 
+#  scale32Init(0x08000000,0x10000,2);
+  scale32Init(0x08000000,0x10000,1);
+
+# When sending to a Linux Host set bigendian_out = 0
+bigendian_out = 0;
+
+
+  log inform "User Download Executed"
+
+end download
+    
+begin prestart
+
+  variable jj, adc_id
+  int inscale
+
+
+  log inform "Entering User Prestart"
+
+  init trig source GEN
+  link async trig source GEN S3610_MODE to usrtrig and usrtrig_done
+  event type 1 then read GEN S3610_MODE
+
+  log inform "User Prestart Executed"
+#  s3600ex(0); 
+#  s3600exCoin(0);
+
+# for TDC Init 
+#  tdcInit(0x431000,0,0);
+#  tdcInit(0x431000,0x10000,NTDC);
+#  tdcInit(0x431000,0,0);
+
+
+# Activate the scaler
+%%
+
+for (inscale=0;inscale<1;inscale++) {
+  scale32Enable(inscale,0);
+  scale32CLR(inscale,0,1);
+}
+
+%%
+
+end prestart
+
+begin end
+  int inscale
+ 
+
+%%
+
+ for (inscale=0;inscale<1;inscale++) {
+ scale32Disable(inscale,0);
+}
+
+%%
+  log inform "User End Executed"
+  CDODISABLE(GEN,S3610_MODE,TRIG_INPUT);
+end end
+
+begin pause
+
+
+
+  log inform "User Pause Executed"
+  CDODISABLE(GEN,S3610_MODE,TRIG_INPUT);
+end pause
+
+begin go
+  int currtime	  
+  int ii; 	
+  CDOENABLE(GEN,S3610_MODE,TRIG_INPUT);  
+
+  log inform "Entering User Go"
+#  s3600Status(0);
+  s3610Status(0,0);
+
+# Activate the scaler
+  log inform "2Entering User Go"
+
+end go
+
+begin trigger usrtrig
+
+
+ int ii;
+ int inscale;
+
+#logMsg("EVTYPE = %d\n",EVTYPE,0,0,0,0,0);
+
+  rol->dabufp = (long *) 0;
+
+  open event type EVTYPE of BT_UI4
+  open bank EVTYPE of BT_UI4 
+#*rol->dabufp++ =20;
+#*rol->dabufp++ = s3600d[0]->data[0];
+%%
+  *rol->dabufp++ = 0xe906f003;
+  for (ii=17;ii<25;ii++) {
+    *rol->dabufp++ = s32p[0]->scaler[_I_(ii)];
+  }
+
+%%
+
+  close bank
+  close event
+#logMsg("Scaler work!!\n");
+#  scale32Print(0,0);
+#logMsg("I got the trigger!!1\n");
+
+#logMsg("Event closed\n");
+
+end trigger
+
+
+
+begin done usrtrig
+
+#  logMsg("done usrtrig\n");
+
+end done 
+
+begin done
+int inscale;
+int ii;
+
+# Re-enable Trigger Source here
+  s3610IntAck(TRIG_INPUT);
+
+# Re-activate the scaler
+%%
+
+for (inscale=0;inscale<1;inscale++) {
+  scale32Enable(inscale,0);
+  scale32Clear(inscale,1);
+}
+
+%%
+#  logMsg("done nothing\n");
+
+end done
+
+begin status
+
+end status
+
+

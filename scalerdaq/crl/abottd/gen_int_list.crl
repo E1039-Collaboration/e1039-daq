@@ -1,0 +1,100 @@
+# 
+#  General User readout list
+#
+#    David Abbott, TJNAF 2000
+
+readout list GEN_USER
+maximum 1024,512
+general readout
+
+# A16 Address for SIS3610 Module
+const TRIG_ADDR=0xe800
+const TRIG_INPUT=1
+const S3610_MODE=1
+
+extern int bigendian_out;
+
+begin download
+
+  s3610Init(TRIG_ADDR,0,0);
+
+# When sending to a Linux Host set bigendian_out = 0
+bigendian_out = 0;
+
+
+  log inform "User Download Executed"
+
+end download
+    
+begin prestart
+
+  variable jj, adc_id
+
+  log inform "Entering User Prestart"
+
+  init trig source GEN
+  link async trig source GEN S3610_MODE to usrtrig and usrtrig_done
+  event type 1 then read GEN S3610_MODE
+
+  log inform "User Prestart Executed"
+
+end prestart
+
+begin end
+
+  CDODISABLE(GEN,S3610_MODE,TRIG_INPUT);
+
+  log inform "User End Executed"
+
+end end
+
+begin pause
+
+  CDODISABLE(GEN,S3610_MODE,TRIG_INPUT);
+
+  log inform "User Pause Executed"
+
+end pause
+
+begin go
+  
+  log inform "Entering User Go"
+  
+  CDOENABLE(GEN,S3610_MODE,TRIG_INPUT);
+
+end go
+
+begin trigger usrtrig
+ 
+  variable ii
+
+  logMsg("EVTYPE = %d\n",EVTYPE,0,0,0,0,0);
+
+  rol->dabufp = (long *) 0;
+  open event type EVTYPE of BT_UI4
+
+  output hex da000011
+  output hex 1
+  output hex 2
+  output hex da0000ff
+
+ close event
+
+end trigger
+
+begin done usrtrig
+
+end done
+
+begin done
+
+# Re-enable Trigger Source here
+  s3610IntAck(TRIG_INPUT);
+
+end done
+
+begin status
+
+end status
+
+

@@ -1,0 +1,356 @@
+#  Source for generic VME readout using a
+#  TJNAF trigger supervisor interface register (TIR)
+#  as a source for external interrupts
+#
+#    David Abbott, TJNAF 1996
+#
+# This is the old CRL, only for timing test purpose!!!
+
+readout list VME1
+maximum 20000,4000
+#maximum <buffer size per event(in bytes)> <number of buffer to create>
+vme readout
+ts control
+
+const V1495TDC_LVL0_on=0
+const V1495TDC_LVL1_on=0
+const V1495TDC_LVL2_on=0
+const V1495NonBendOff=1
+
+const PULSER_MODE_on=0
+
+const V1495splatBlock_on=0
+const NV1495L0=2;
+const NV1495L1=2;
+const NV1495L2=1;
+const NV1495 = 4;
+int V_DELAY[9];
+
+const TIR_ADDR = 0x0ed0;
+int ii;
+# Define tsP pointer even if there is no TS in the Crate
+struct vme_ts2 *tsP;
+extern unsigned int vxTicks;
+int event_ty;
+extern int bigendian_out;
+
+
+begin download
+
+  variable res
+
+# If the ROC is sending data to Little-Endian EB
+# e.g. a x86 Linux CPU then bigendian_out = 0.
+# Unless the ROC is also running on a Little-Endian
+# machine. Then set bigendian_out=1.
+  bigendian_out = 0;
+
+
+# Setup TIR
+#  tsInit(0,0);
+  tirInit(TIR_ADDR);
+%%
+  v1495Init(0x04000000,0x100000,NV1495);
+
+ for(ii=0;ii<NV1495;ii++){
+  v1495Reload(ii);
+ }
+%%
+  log inform "5 v1495 Boards are Initialized"
+  log inform "User Download TIR Executed"
+
+end download
+    
+begin prestart
+  log inform "User Prestart TIR Executed"
+  log inform "Entering User Trigger Prestart"
+
+  init trig source VME
+  link async trig source VME 1 to usrtrig and usrtrig_done
+  event type 1 then read VME 1
+
+ 
+  log inform "Ending TIR Prestart"
+#  vmetenable(1,0);
+
+ rol->dabufp = (long *) 0;
+  UEOPEN(132,BT_UI4,0);
+
+
+%%
+  *rol->dabufp++ =rol->pid;
+ 
+
+// 256ns wide TDC windows
+// Using previous values for now, just change index numbers according to changed board address (no longer Y hodo)
+  V_DELAY[0]=0x0029;
+  V_DELAY[1]=0x0029;
+  V_DELAY[2]=0x0029;
+  V_DELAY[3]=0x0029;
+  V_DELAY[4]=0x001e;
+
+// 256ns wide TDC windows
+/*
+  V_DELAY[0]=0x0029;
+  V_DELAY[1]=0x0029;
+  V_DELAY[2]=0x0029;
+  V_DELAY[3]=0x0029;
+  V_DELAY[4]=0x0029;
+  V_DELAY[5]=0x0029;
+  V_DELAY[6]=0x0029;
+  V_DELAY[7]=0x0029;
+  //V_DELAY[8]=0x0018;
+  V_DELAY[8]=0x001e;
+*/
+
+// 128ns wide TDC windows
+/*
+  V_DELAY[0]=0x012c;
+  V_DELAY[1]=0x012c;
+  V_DELAY[2]=0x012c;
+  V_DELAY[3]=0x012c;
+  V_DELAY[4]=0x012b;
+  V_DELAY[5]=0x012b;
+  V_DELAY[6]=0x012b;
+  V_DELAY[7]=0x012b;
+  V_DELAY[8]=0x0121;
+*/
+// 64ns wide TDC windows
+/*
+  V_DELAY[0]=0x0233;
+  V_DELAY[1]=0x0233;
+  V_DELAY[2]=0x0233;
+  V_DELAY[3]=0x0233;
+  V_DELAY[4]=0x0232;
+  V_DELAY[5]=0x0232;
+  V_DELAY[6]=0x0232;
+  V_DELAY[7]=0x0232;
+  V_DELAY[8]=0x0224;
+*/
+
+// 32ns wide TDC windows
+/*
+  V_DELAY[0]=0x032e;
+  V_DELAY[1]=0x032e;
+  V_DELAY[2]=0x032e;
+  V_DELAY[3]=0x032e;
+  V_DELAY[4]=0x032d;
+  V_DELAY[5]=0x032d;
+  V_DELAY[6]=0x032d;
+  V_DELAY[7]=0x032d;
+  V_DELAY[8]=0x0323;
+*/
+
+  if(PULSER_MODE_on == 1) {
+    V_DELAY[0]=0x002c;
+    V_DELAY[1]=0x002c;
+    V_DELAY[2]=0x002c;
+    V_DELAY[3]=0x002c;
+    V_DELAY[4]=0x002b;
+    V_DELAY[5]=0x002b;
+    V_DELAY[6]=0x0023;
+    V_DELAY[7]=0x0023;
+    V_DELAY[8]=0x001f;
+
+    v1495PatternSet(0, 2, 'p', 't', 0);
+    v1495PatternSet(0, 3, 'n', 'b', 0);
+    v1495ActivatePulser(2);
+    v1495ActivatePulser(3);
+  }
+
+
+  for (ii=0;ii<NV1495;ii++){ 
+    if ( V1495TDC_LVL0_on!=0 && ii>=0 && ii<NV1495L0 ){
+      V_DELAY[ii]=V_DELAY[ii]+0x1000;
+    }
+    if ( V1495TDC_LVL1_on!=0 && ii>=NV1495L0 && ii<(NV1495L0+NV1495L1) ){
+      V_DELAY[ii]=V_DELAY[ii]+0x1000;
+    }
+    if ( V1495TDC_LVL2_on!=0 && ii==(NV1495L0+NV1495L1) ){
+      V_DELAY[ii]=V_DELAY[ii]+0x1000;
+    }
+    if ( V1495splatBlock_on!=0 && ii>=NV1495L0 && ii<(NV1495L0+NV1495L1) ){	
+      V_DELAY[ii]=V_DELAY[ii]+0x2000;
+    }
+
+    v1495Timeset(96,ii);
+    v1495TimewindowSet(ii,V_DELAY[ii]);
+
+///////Setting up the SplatBlock Counter
+//   440 nonbend up
+///   v1495ScWrite(0,1,255);
+///   v1495ScWrite(0,2,255);
+///   v1495ScWrite(0,3,255);
+///   v1495ScWrite(0,4,255);
+//    450 nonbend down
+///   v1495ScWrite(1,1,255);
+///   v1495ScWrite(1,2,255);
+///   v1495ScWrite(1,3,255);
+///   v1495ScWrite(1,4,255);
+//   460 bend up
+////   v1495ScWrite(2,1,255);
+////   v1495ScWrite(2,2,255);
+///   v1495ScWrite(2,3,255);
+///   v1495ScWrite(2,4,255);
+//   470 bend down
+///   v1495ScWrite(3,1,255);
+///   v1495ScWrite(3,2,255); 
+///   v1495ScWrite(3,3,255);
+///  v1495ScWrite(3,4,255);
+//   480 level 2
+//  v1495ScWrite(4,1,0);
+//  v1495ScWrite(4,2,0); 
+//  v1495ScWrite(4,3,0);
+//  v1495ScWrite(4,4,0);
+
+//    v1495TimewindowSet(ii,0xa);	
+ //	logMsg("V_DELAY %d=0x%x\n",ii,V_DELAY[ii]);	
+  } 
+
+
+%%
+  UECLOSE;
+  log inform "Prestart  1"
+
+end prestart
+
+begin end
+  variable trig_count
+
+# Get Final Trigger Count
+  CDODISABLE(VME,1,0);
+  log inform "User End Executed VME TIR"
+
+end end
+
+begin pause
+
+  log inform "User Pause Executed" 
+  CDODISABLE(VME,1,0);
+
+end pause
+
+begin go
+  CDOENABLE(VME,1,0);
+  
+  log inform "Entering User Go"
+%%
+for (ii=0;ii<NV1495;ii++){ 
+   v1495Run(ii);
+}
+
+%%
+  log inform "Finish User Go"
+
+end go
+
+begin trigger usrtrig
+ 
+ variable ii,iii,event_no,data_addr,retVal,maxWords,nWords,remBytes,TmpV1495Count
+ int TmpData;
+
+ long tmpaddr1,tmpaddr2;
+ event_ty = EVTYPE;
+ event_no = *rol->nevents;
+ rol->dabufp = (long *) 0;
+ open event type EVTYPE of BT_UI4
+ open bank EVTYPE of BT_UI4 
+
+ *rol->dabufp++ = vxTicks;
+%%	
+
+
+if (event_ty ==14){
+
+ if (V1495TDC_LVL0_on!=0 || V1495TDC_LVL1_on!=0 || V1495TDC_LVL2_on!=0 ){
+
+//  *rol->dabufp++ =	NV1495;
+  TmpV1495Count=0x1495fa11;
+  
+
+  if( V1495TDC_LVL1_on!=0 ){
+   for (ii=NV1495L0;ii<(NV1495L0+NV1495L1);ii++){ 	
+// data scaler flag=3, ignore = 0, latch=1, tdc=2,dsTDC2 flag=4, v1495=5
+     *rol->dabufp++ =0xe906f005;
+     *rol->dabufp++ =   v1495RevisionRead(ii);   // broad id read   
+/////    *rol->dabufp++ =   v1495TimewindowRead(ii);  // Delay time, no needed right now!!
+     TmpV1495Count=v1495TDCcount(ii); 
+     *rol->dabufp++ = TmpV1495Count ;       //# ofword in buffer
+     //*rol->dabufp++ =   v1495CommonstopRead(ii); //trigger timing information
+     *rol->dabufp++ =   v1495CommonstopRead(ii, 0x2d, -5); //trigger timing information
+     if (TmpV1495Count!=0xd1ad){      	
+       for(iii=0;iii<TmpV1495Count;iii++){
+ 	 *rol->dabufp++ = v1495TDCReadout(ii,iii);
+       }
+     }
+   }//for NV1495L1
+  }//  if V1495TDC_LVL1_on!=0 
+
+  if( V1495TDC_LVL2_on!=0 ){
+    ii = NV1495L0 + NV1495L1; 	
+// data scaler flag=3, ignore = 0, latch=1, tdc=2,dsTDC2 flag=4, v1495=5
+     *rol->dabufp++ =0xe906f005;
+     *rol->dabufp++ =   v1495RevisionRead(ii);   // broad id read   
+/////    *rol->dabufp++ =   v1495TimewindowRead(ii);  // Delay time, no needed right now!!
+     TmpV1495Count=v1495TDCcount(ii); 
+     *rol->dabufp++ = TmpV1495Count ;       //# ofword in buffer
+     *rol->dabufp++ =   v1495CommonstopRead(ii); //trigger timing information
+     if (TmpV1495Count!=0xd1ad){      	
+       for(iii=0;iii<TmpV1495Count;iii++){
+ 	 *rol->dabufp++ = v1495TDCReadout(ii,iii);
+       }
+     }
+ 
+   }//  if V1495TDC_LVL?_on!=0
+ 
+  }//if (V1495TDC_LVL0_on!=0 || V1495TDC_LVL1_on!=0 || V1495TDC_LVL2_on!=0 )
+
+ *rol->dabufp++ =0xe906c0da;    
+
+}//if event=14
+
+%%
+
+
+ close bank
+ close event
+
+
+end trigger
+
+begin done usrtrig
+%%
+if(event_ty ==14){
+  if (V1495TDC_LVL0_on!=0){
+    for (ii=0;ii<NV1495L0;ii++){
+      v1495Run(ii);
+    }
+  }
+  if (V1495TDC_LVL1_on!=0){
+    for (ii=NV1495L0;ii<(NV1495L0+NV1495L1);ii++){
+      v1495Run(ii);
+    }
+  }
+  if (V1495TDC_LVL2_on!=0){
+    ii = NV1495L0 + NV1495L1;
+    v1495Run(ii);
+  }
+}
+
+%%
+
+
+end done
+
+
+begin done
+# Acknowledge tir register
+
+  CDOACK(VME,1,0);
+end done
+
+begin status
+
+end status
+
+

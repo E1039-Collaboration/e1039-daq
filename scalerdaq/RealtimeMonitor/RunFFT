@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#NOTE: You must update the location of the program and put this script in PATH
+loc="/home/e906daq/seaquest-daq/E906ScalerDAQ/RealtimeMonitor"
+
+echo -en "\033]0;ScalerDAQ FFT Realtime Monitor\a"
+cd $loc
+E906FFT

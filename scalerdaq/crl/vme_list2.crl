@@ -1,0 +1,146 @@
+#  Source for generic VME readout using a
+#  TJNAF trigger supervisor interface register (TIR)
+#  as a source for external interrupts
+#
+#    David Abbott, TJNAF 1996
+
+readout list VME1
+maximum 1024,500
+vme readout
+ts control
+
+const TIR_ADDR = 0x0ed0
+
+# Define tsP pointer even if there is no TS in the Crate
+struct vme_ts2 *tsP;
+
+extern int bigendian_out;
+
+begin download
+
+  variable res
+
+# If the ROC is sending data to Little-Endian EB
+# e.g. a x86 Linux CPU then bigendian_out = 0.
+# Unless the ROC is also running on a Little-Endian
+# machine. Then set bigendian_out=1.
+  bigendian_out = 0;
+
+
+# Setup TIR
+  tsInit(0,0);
+  tirInit(TIR_ADDR);
+  
+  log inform "User Download Executed"
+
+end download
+    
+begin prestart
+  log inform "User Prestart 2 Executed"
+  log inform "Entering User Trigger Prestart"
+
+  init trig source VME
+  link async trig source VME 1 to usrtrig and usrtrig_done
+  event type 1 then read VME 1
+  log inform "Starting Trigger Supervisor Prestart========================================"
+%%
+  /*trigger supervisor code taken from example ts2_util.crl
+;
+  tsReset(0);                   /* Initialize */
+  tsCsr2Set(TS_CSR2_LOCK_ALL);  /* ROC Lock mode on all BRANCHES */
+  tsEnableInput(0xfff,0);       /* Enable all Trigger inputs in non-strobe mode */
+  tsRoc(0,0,0,1);               /* Enable ACK 0,1 on BRANCH 1  and ACK 2 on Branch 2*/
+
+/* Synchronization programming */
+  tsSync(100);                      /* schedule Sync every 100th physics trigger */
+  tsCsr2Set(TS_CSR2_ENABLE_SYNC);   /* Enable Scheduled syncs */ 
+
+/* Set nominal Level 2/3 timer values */
+  tsTimerWrite(TS_TIMER_L2A,0x05);   /* Level 2 Timer 40ns/count */
+  tsTimerWrite(TS_TIMER_L3A,0x05);   /* Level 3 Timer 40ns/count */
+
+/* Front End Busy timer 40ns/count */
+  tsTimerWrite(TS_TIMER_FB,250);         /* 250 = 10 microsec */   
+  tsCsr2Set(TS_CSR2_ENABLE_FB_TIMER);    /* Enable FEB Timer */
+
+/*  Construct TS memory data  ---  in the following model, all trigger patterns 
+    that form the memory address are assigned to trigger class 1.  For those 
+    trigger patterns with a single hit, the ROC code is set to be the trigger 
+    input number.  Otherwise, the ROC code is set to 0xE.  All LEVEL 1 ACCEPT 
+    signals are asserted for every pattern.  */
+   
+  tsMemInit(0);
+
+/* Fix special cases - both inputs 1 and 2 firing - type 13 (0xd) */
+  tsMemWrite(3,0xffd3);
+
+/* Set specific input prescale factors */
+  tsPrescale(1,0);
+  tsPrescale(2,0);
+
+%%
+  log inform "Ending Trigger Supervisor Prestart"
+
+
+end prestart
+
+begin end
+
+  CDODISABLE(VME,1,0);
+
+  log inform "User End Executed"
+
+end end
+
+begin pause
+
+  tsStop(1);
+  CDODISABLE(VME,1,0);
+
+  log inform "User Pause Executed"
+
+end pause
+
+begin go
+  
+  log inform "Entering User Go"
+    tsGo(1);  /* Enable TS and L1 */
+  CDOENABLE(VME,1,0);
+
+end go
+
+begin trigger usrtrig
+ 
+  variable ii, event_ty, event_no
+
+ event_ty = EVTYPE;
+ event_no = *rol->nevents;
+
+ rol->dabufp = (long *) 0;
+ open event type EVTYPE of BT_UI4
+
+  output hex da000022
+  rol->dabufp += 20;
+  output hex da0000ff
+
+ close event
+
+end trigger
+
+begin done usrtrig
+
+end done
+
+
+begin done
+
+# Acknowledge tir register
+  CDOACK(VME,1,0);
+
+end done
+
+begin status
+
+end status
+
+

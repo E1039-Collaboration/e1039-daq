@@ -1,0 +1,269 @@
+# vme_ts_tir_scale.crl
+#  Source for generic VME readout using a
+#  TJNAF trigger supervisor interface register (TIR)
+#  as a source for external interrupts
+#
+#    David Abbott, TJNAF 1996
+
+#readout list VME1
+readout list TS2L
+#maximum 30000,1000
+maximum 20000,100
+vme readout
+ts control
+
+const TIR_ADDR = 0x0ed0
+extern unsigned int vxTicks;
+# Define tsP pointer even if there is no TS in the Crate
+#struct vme_ts2 *tsP;
+
+extern int bigendian_out;
+
+begin download
+
+  variable res
+#  scale32Init(0x08000000,0x10000,1);
+# If the ROC is sending data to Little-Endian EB
+# e.g. a x86 Linux CPU then bigendian_out = 0.
+# Unless the ROC is also running on a Little-Endian
+# machine. Then set bigendian_out=1.
+  bigendian_out = 0;
+
+
+# Setup TIR
+#  tsInit(0xed0000,0);
+  tsInit(0,0);
+  tirInit(TIR_ADDR);
+  
+ scale32Init(0x08020000,0x010000,2);
+
+  log inform "User Download Executed"
+
+end download
+    
+begin prestart
+  variable ii
+  log inform "User Prestart 2 Executed"
+  log inform "Entering User Trigger Prestart"
+
+  init trig source VME
+  link async trig source VME 1 to usrtrig and usrtrig_done
+  event type 1 then read VME 1
+
+  log inform "Starting Trigger Supervisor Prestart!!!!!!!!!!!!!!!!!!!!!"
+%%
+  /*trigger supervisor code taken from example ts2_util.crl*/
+
+  tsReset(0);                   /* Initialize */
+  tsCsr2Set(TS_CSR2_LOCK_ALL);  /* ROC Lock mode on all BRANCHES */
+//  tsEnableInput(0xfff,0);       /* Enable all Trigger inputs in non-strobe mode */
+  tsEnableInput(0xc01,0);       /* Enable only trigger2 inputs in non-strobe mode */
+
+
+                  
+//   tsRoc(7,15,15,7);         /*current config is tsRoc(roc8+roc13+roc12,roc7+3+11,roc4+10+6+24,TS_roc2+roc9)*/  
+   tsRoc(7,15,15,7);         /*current config is tsRoc(roc8+roc13+roc12,roc7+3+11,roc4+10+6,TS_roc2+roc9)*/   
+
+//   tsRoc(3,15,14,7);         /*current config is tsRoc(roc8+roc13,roc7+5+3+11,roc4+10+6,TS_roc2+roc9)*/  
+
+
+//   tsRoc(2,15,14,7);         /*current config is tsRoc(roc8,roc7+5+3+11,roc4+10+6,TS_roc2+roc9)*/  
+//    tsRoc(2,7,14,7);         /*current config is tsRoc(roc8,roc7+5+3,roc4+10+6,TS_roc2+roc9)*/  
+//  tsRoc(2,7,6,7);         /*current config is tsRoc(roc8,roc7+5+3,roc4+10,TS_roc2+roc9)*/  
+
+//  tsRoc(2,7,6,7);         /*current config is tsRoc(No roc8,No roc7+5+3,roc4+10+6,TS_roc2+roc9)*/  
+
+//  tsRoc(2,7,0,7);         /*current config is tsRoc(roc8,roc7+5+3,No roc4+10+6,TS_roc2+roc9)*/  
+
+
+/* Synchronization programming */
+  tsSync(100);                      /* schedule Sync every 100th physics trigger */
+  tsCsr2Set(TS_CSR2_ENABLE_SYNC);   /* Enable Scheduled syncs */ 
+
+/* Set nominal Level 2/3 timer values */
+  tsTimerWrite(TS_TIMER_L2A,0x05);   /* Level 2 Timer 40ns/count */
+  tsTimerWrite(TS_TIMER_L3A,0x05);   /* Level 3 Timer 40ns/count */
+
+/* Front End Busy timer 40ns/count */
+  tsTimerWrite(TS_TIMER_FB,250);         /* 250 = 10 microsec */   
+  tsCsr2Set(TS_CSR2_ENABLE_FB_TIMER);    /* Enable FEB Timer */
+
+/*  Construct TS memory data  ---  in the following model, all trigger patterns 
+    that form the memory address are assigned to trigger class 1.  For those 
+    trigger patterns with a single hit, the ROC code is set to be the trigger 
+    input number.  Otherwise, the ROC code is set to 0xE.  All LEVEL 1 ACCEPT 
+    signals are asserted for every pattern.  */
+   
+  tsMemInit(0);
+
+
+/* Fix special cases - both inputs 1 and 2 firing - type 13 (0xd) */
+/* 0xa-bb-c-d  a:triggertype, bb:L1 accept output, c:useless, d:trigger class (from 1 to 3) */
+//  tsMemWrite(3,0xffd3);
+
+  tsMemWrite(1,0xeffd3);
+  tsMemWrite(2,0xeffd3);
+  tsMemWrite(4,0xeffd3);
+  tsMemWrite(8,0xeffd3);
+  tsMemWrite(16,0xeffd3);
+  tsMemWrite(32,0xeffd3);
+  tsMemWrite(64,0xeffd3);
+  tsMemWrite(128,0xeffd3);
+  tsMemWrite(256,0xeffd3);
+  tsMemWrite(512,0xeffd3);
+
+  for (ii=1024;ii<2048;ii++) {
+    tsMemWrite(ii,0xb00d3);
+  }	
+  for (ii=2048;ii<4096;ii++) {
+   tsMemWrite(ii,0xc00d3);
+  }	
+
+/* Set specific input prescale factors */
+  tsPrescale(1,0);
+  tsPrescale(2,0);
+
+//  tsPrescale(7,1000000);
+//  tsPrescale(8,1000000);
+
+
+
+%%
+  log inform "Ending Trigger Supervisor Prestart"
+  vmetenable(1,0);  
+
+/* Scaler Prestart */
+/* Enable scalers, set Clock readout mask, and clear all channels*/
+  scale32Enable(0,0); 
+  scale32CLR(0,0,1); 
+  scale32Clear(0,1); 
+
+
+  scale32Enable(1,0); 
+  scale32CLR(1,0,1); 
+  scale32Clear(1,1); 
+
+
+end prestart
+
+begin end
+
+  variable trig_count
+
+
+
+  tsStop(1);
+
+  CDODISABLE(VME,1,0);
+
+# Get Final Trigger Count
+#  trig_count = tsScalRead(TS_SCALER_EVENT,0);
+#  printf("TS Event Scaler Count = %d\n",trig_count);
+
+  scale32Disable(0,0);
+  scale32Disable(1,0);
+  log inform "User End Executed VME TS"
+
+end end
+
+begin pause
+
+  tsStop(1);
+  CDODISABLE(VME,1,0);
+
+  log inform "User Pause Executed"
+
+end pause
+
+begin go
+  
+  log inform "Entering User Go"
+  CDOENABLE(VME,1,0);
+  tsGo(1);  /* Enable TS and L1 */
+
+
+
+end go
+
+begin trigger usrtrig
+ 
+ variable ii, event_ty, event_no,tmp_fifocount
+ unsigned int tmp_tsfifo;
+ event_ty = EVTYPE;
+ event_no = *rol->nevents;
+
+# log inform "I got a trigger!!"
+
+ rol->dabufp = (long *) 0;
+ open event type EVTYPE of BT_UI4
+  *rol->dabufp++ =0x11111111;	
+  *rol->dabufp++ =0x11111111;	
+  *rol->dabufp++ = vxTicks;	
+  *rol->dabufp++ =0xe906f00f; 
+
+###########################################
+#  Read TS trigger input 
+
+#  tmp_fifocount =tsFifoCount();
+#  *rol->dabufp++ =tmp_fifocount;
+%%
+//  for (ii=0;ii<tmp_fifocount;ii++){ 	 
+//   tmp_tsfifo=tsFifoRead(1);
+ //  *rol->dabufp++ =tsFifoRead(1);
+    tmp_tsfifo=(tsP->trigData)&0xffff;
+    *rol->dabufp++ =	tmp_tsfifo;
+
+
+//  }	
+
+   //scale test
+  if(event_ty==11 || event_ty==12){
+     *rol->dabufp++ = 0xe906f003; // scaler flag
+     *rol->dabufp++ = 0;
+
+     for (ii=0;ii<32;ii++) {
+       *rol->dabufp++ = s32p[0]->scaler[_I_(ii)];
+     }
+	
+
+     *rol->dabufp++ = 0xe906f003;
+     *rol->dabufp++ = 1;
+     for (ii=0;ii<32;ii++) {
+       *rol->dabufp++ = s32p[1]->scaler[_I_(ii)];
+     }
+
+    scale32Enable(0,0);
+    scale32Clear(0,1);	
+    scale32Enable(1,0);
+    scale32Clear(1,1);
+
+  }
+
+
+%%
+
+# log inform "Scaler work!!\n"
+
+ close event
+
+end trigger
+
+begin done usrtrig
+
+
+
+end done
+
+
+begin done
+
+# Acknowledge tir register
+  CDOACK(VME,1,0);
+
+end done
+
+begin status
+
+end status
+
+

@@ -1,0 +1,54 @@
+e906daq1: local file
+
+
+ROCe906
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.21:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme1.fnal.gov s=/home/e906daq/tftpboot/roc1.boot
+
+ROC17
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.27:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme7.fnal.gov s=/home/e906daq/tftpboot/roc7.boot
+
+ROC14
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.24:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme4.fnal.gov s=/home/e906daq/tftpboot/roc4.boot
+
+ROC15
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.25:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme5.fnal.gov s=/home/e906daq/tftpboot/roc5.boot
+
+ROC12
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.22:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme2.fnal.gov s=/home/e906daq/tftpboot/roc2.boot
+
+ROC16
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.26:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme6.fnal.gov s=/home/e906daq/tftpboot/roc6.boot
+
+ROC13
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.23:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme3.fnal.gov s=/home/e906daq/tftpboot/roc3.boot
+
+ROC19
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.29:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme9.fnal.gov s=/home/e906daq/tftpboot/roc9.boot
+
+ROC18
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.28:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme8.fnal.gov s=/home/e906daq/tftpboot/roc8.boot
+
+$gei(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx5500_v5 e=192.168.24.28:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme8.fnal.gov s=/home/e906daq/tftpboot/roc18_5500.boot
+
+ROC11
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.31:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme11.fnal.gov s=/home/e906daq/tftpboot/roc11.boot
+
+ROC24
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.34:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme14.fnal.gov s=/home/e906daq/tftpboot/roc14.boot
+
+ROC23
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.33:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme13.fnal.gov s=/home/e906daq/tftpboot/roc13.boot
+
+ROC22
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.32:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme12.fnal.gov s=/home/e906daq/tftpboot/roc12.boot
+
+ROC20
+$geisc(0,0)e906daq1.fnal.gov:/home/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.30:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme10.fnal.gov s=/home/e906daq/tftpboot/roc10.boot
+
+
+ROC25
+$geisc(0,0)e906daq1.fnal.gov:/data2/e906daq/tftpboot/vx6100_v4.1 e=192.168.24.35:ffffff00 h=192.168.24.1 g=192.168.24.1 u=e906daq f=0x20 tn=e906vme15.fnal.gov s=/home/e906daq/tftpboot/roc15.boot
+
+
+
+

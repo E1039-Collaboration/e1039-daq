@@ -1,0 +1,20 @@
+1. find or create the screen session looking at ROC6
+     - as root user, screen /dev/ttyS0
+2. issues 'reboot' command
+3. interrupt reboot by hitting any key
+4. enter the configuration string appropriate for the CODA host (see below)
+5. Begin PreCoda sequence on CODA host
+6.issue the '@' command to reboot
+7. Complete PreCoda sequence on CODA host
+8. rcgui: platform->connect.  configure.
+
+########
+# enter this to configure for e906sc3
+########
+$gei0(0,0)e906sc3.sq.pri:/home/e906daq/tftpboot/vx5500_v5 e=192.168.24.151:ffffff00 h=192.168.24.112 g=192.168.24.112 u=e906daq f=0x20 tn=e906vmesa.sq.pri s=/home/e906daq/tftpboot/roc6_5500_sc.boot
+
+########
+# enter this to configure for e906sc2
+########
+$gei0(0,0)e906sc2.fnal.gov:/home/e906daq/tftpboot/vx5500_v5 e=192.168.24.151:ffffff00 h=192.168.24.12 g=192.168.24.12 u=e906daq f=0x20 tn=e906vmesa.fnal.gov s=/home/e906daq/tftpboot/roc6_5500_sc.boot
+

@@ -1,0 +1,349 @@
+#
+#  General User readout list, for testing
+#
+#    David Abbott, TJNAF 2000
+
+readout list GEN_USER
+maximum 51200,2000
+general readout
+
+const TDC_ScalarON = 1
+const NTDC = 1
+const TRIG_ADDR = 0x2800
+const TRIG_INPUT = 13
+const S3610_MODE = 2
+const NFlushMax = 2000
+const blkSize = 1000
+
+int event_no;
+int event_ty;
+extern int bigendian_out;
+extern unsigned int vxTicks;
+int ii;
+
+%%
+int ARM_enable = 1;
+int UP_Limit = 200;
+int Low_Limit = 50;
+
+int TDCBoardID = 0x09000000;
+int csr = 0xffff0060;  // csr = 0xffff0060 /rising edge;  0xffff0160 /both edge / 2048ns /only 1 buffer
+int MultiHitSetup = 0x0;
+int TimeWindowOn = 0;
+int LimitReg;
+int TDCSetup;
+
+int nFlushes = 0;
+int PerEventRead = 0;
+int busyFlag[NTDC];
+
+int TESTrun = 3;
+%%
+
+begin download
+
+  s3610Init(TRIG_ADDR, 0, 0);
+
+  # When sending to a Linux Host set bigendian_out = 0
+  bigendian_out = 0;
+
+%%
+  //TW-TDC init
+  LimitReg = Low_Limit + (UP_Limit << 16) + (TimeWindowOn << 31) + (ARM_enable << 27);
+  CR_Init(TDCBoardID, 0x1000000, NTDC);
+
+  for(ii = 0; ii < NTDC; ii++) {
+	CR_Reset(ii);
+    DP_Init(ii, 0, 0x3fff);
+	CR_WR_Reg(ii, 5, LimitReg);      //set low limit = 0x100
+    CR_WR_Reg(ii, 3, MultiHitSetup); //turn off MultiHit Elimination
+    CR_WR_Reg(ii, 6, 0);             //turn off test mode
+  }
+
+  //v1495 pulser init
+  v1495PulserInit(0x04400000, 0, 1);
+  v1495_RunMode_Start(0);            //wait until v1495_Exit signal;
+  v1495_PulseMode_MultiHit(0, 0, 0); //setup for only one hit
+
+  if(TESTrun == 1) {
+	v1495_PulseMode_Rotate(0);  //test#1
+	v1495_Trig_Setup(0, 200);   //trigger setup. trigger fixed in ncycle  //test1
+  } else if(TESTrun == 2) {
+	v1495_PulseMode_MultiHit(0, 0, 0); //test#2
+	v1495_Trig_Setup(0, 0);            // trigger setup. trigger fixed in n+128 (n=0~95) cycle //test#2
+  } else if(TESTrun == 3) {
+	v1495_PulseMode_MultiHit(0, 3, 2); //5 pulses, 4 cycles//test#3
+	v1495_Trig_Setup(0, 100);          // trigger setup. trigger fixed in ncycle  //test#3
+    v1495_T2P_Setup(0, 1);
+  } else if(TESTrun == 4) {
+	v1495_PulseMode_MultiHit(0, 7, 8); //8 pulses, 10 cycles//test#4.1
+	v1495_Trig_Setup(0, 200);          // trigger setup. trigger fixed in ncycle  //test#4
+  } else if(TESTrun == 5) {
+    v1495_PulseMode_MultiHit(0, 3, 2); //4 pulses, 4 cycles//test#5
+	v1495_Trig_Setup(0, 200);          // trigger setup. trigger fixed in ncycle  //test#5
+    for(ii = 0; ii < NTDC; ii++) {
+	  MultiHitSetup = 0x00840000;
+      CR_WR_Reg(ii, 3, 0x00840000);
+	}
+  } else if(TESTrun == 6) {
+	v1495_PulseMode_MultiHit(0, 7, 8); //8 pulses, 10 cycles//test#4.1
+	v1495_Trig_Setup(0, 200);          // trigger setup. trigger fixed in ncycle  //test#4
+    for(ii = 0; ii < NTDC; ii++) {
+	  MultiHitSetup = 0x00d40000;
+	  CR_WR_Reg(ii, 3, MultiHitSetup);
+	}
+  } else if(TESTrun == 7) {
+	v1495_PulseMode_MultiHit(0, 0, 0); //1 pulses
+	v1495_Trig_Setup(0, 200);          // trigger setup. trigger fixed in ncycle
+  }///end if test run
+
+  TDCSetup = (csr & 0x0000ffff) + (MultiHitSetup & 0xffff0000);
+
+  v1495_Enable_AllCh(0);
+  v1495_PulserStatus(0);
+%%
+
+  log inform "User Download Executed"
+end download
+
+begin prestart
+  log inform "Entering User Prestart"
+
+  init trig source GEN
+  link async trig source GEN S3610_MODE to usrtrig and usrtrig_done
+  event type 1 then read GEN S3610_MODE
+
+  log inform "User Prestart Executed"
+  log inform "Send PreStart Info Event"
+
+  rol->dabufp = (long*)0;
+  UEOPEN(132, BT_UI4, 0);
+
+%%
+  for(ii = 0; ii < NTDC; ++ii) {
+    //FEE event info
+    *rol->dabufp++ = 0xe906f011;
+    *rol->dabufp++ = TDCBoardID + (0x1000000*ii);
+    *rol->dabufp++ = csr;
+    *rol->dabufp++ = MultiHitSetup;
+    *rol->dabufp++ = LimitReg;
+
+    DP_Write(ii, 0, 0x7ffa, 0x7ffa);      //write header position
+    DP_Write(ii, 0xe906ffff, 0, 0x400);   //reset ARM
+    CR_WR_Reg(ii, 7, 0);                  //point the bankID to the first one
+
+    CR_Reset(ii);
+    CR_WR_Reg(ii, 5, LimitReg);
+    CR_WR_Reg(ii, 3, MultiHitSetup);
+    CR_WR_Reg(ii, 6, 0);
+    DP_Write(ii, 0xe906000f, 0x7ffe, 0x7ffe);
+    if(TDC_ScalarON == 1) {
+	  CR_Scalar_Switch(ii, 1);
+	  CR_ScalarInit(ii, 1);
+   	  CR_ScalarInit(ii, 0);
+    }
+  }
+%%
+
+  UECLOSE;
+end prestart
+
+begin end
+
+%%
+  for(ii = 0; ii < NTDC; ii++) {
+	CR_TrigDisable(ii);
+    if(TDC_ScalarON == 1) {
+      CR_Scalar_Switch(ii, 1);
+      CR_ScalarDisplay(ii, 0);
+    }
+  }
+%%
+
+  log inform "User End Executed"
+  CDODISABLE(GEN, S3610_MODE, TRIG_INPUT);
+end end
+
+begin pause
+  log inform "User Pause Executed"
+  CDODISABLE(GEN, S3610_MODE, TRIG_INPUT);
+end pause
+
+begin go
+  log inform "Entering User Go"
+  CDOENABLE(GEN, S3610_MODE, TRIG_INPUT);
+  s3610Status(0, 0);
+
+%%
+  for(ii = 0; ii < NTDC; ++ii) CR_WR_Reg(ii, 7, 0);
+  for(ii = 0; ii < NTDC; ii++) {
+    CR_p[ii]->reg[1] = csr;
+    DP_Write(ii, 0xe9068000 + blkSize, 0x7ffe, 0x7ffe);
+    CR_TrigEnable(ii);
+    if(TDC_ScalarON == 1) {
+ 	  CR_Scalar_Switch(ii, 0);
+ 	  CR_ScalarDisplay(ii, 0);
+ 	}
+  }
+  v1495_ExternalPulser(0);
+%%
+
+  log inform "Finished User Go"
+end go
+
+begin trigger usrtrig
+  variable ii, jj, retVal, maxWords, nWords, remBytes
+  int Cnt, totalDMAwords;
+  int ARMbusy, busyLoop;
+  int DP_Bank;
+  unsigned int* DMAaddr;
+  long tmpaddr1, tmpaddr2;
+
+  event_ty = EVTYPE;
+  event_no = *rol->nevents;
+  rol->dabufp = (long*)0;
+  open event type EVTYPE of BT_UI4
+  open bank EVTYPE of BT_UI4
+
+  ## turn sis3610 the BUSY on
+  s3610WriteBits(0, 1);
+
+  *rol->dabufp++ = vxTicks;
+%%
+  if(event_ty == 2) {  //Physics event
+    DP_Bank = ((event_no - 1) & 0xf) << 10;
+    for(ii = 0; ii < NTDC; ii++) {
+      CR_FastTrigDisable(ii, csr);//when trigger arrives at TDC, disable further trigger input
+      busyFlag[ii] = 1;
+      //DP_Write(ii, DP_Bank, 0x7ffe, 0x7ffe);
+    }
+
+    for(ii = 0; ii < NTDC; ii++) {
+      // data scaler flag=3, ignore=0, latch=1, tdc=2, dsTDC2 flag=4, v1495=5, ZStdc=6, noZSWC=7, ZSWC=8,
+      // Run2TDC= 10, Run2TDC header = 11                                                            ,
+      *rol->dabufp++ = 0xe906f010; // run2 TDC
+      *rol->dabufp++ = TDCBoardID + (ii << 24);
+      *rol->dabufp++ = event_no - 1;
+
+      //Per-event readout
+      if(PerEventRead == 1) {
+        maxWords = 257;	/// normal data taking
+        DMAaddr = TDCBoardID + (ii << 24) + 0x20000 + DP_Bank << 2;      /// normal data taking
+
+        tmpaddr1 = rol->dabufp;
+        tmpaddr2 = DMAaddr;
+        if(((tmpaddr1 & 4) >> 2) != ((tmpaddr2 & 4) >> 2)) *rol->dabufp++ = 0xe906e906;
+
+        retVal = sysVmeDmaSend(rol->dabufp, DMAaddr, maxWords << 2, 0);
+        if(retVal < 0) {
+          logMsg("ERROR in DMA transfer Initialization 0x%x\n", retVal);
+          *rol->dabufp++ = 0xda010bad;
+        } else {
+          remBytes = sysVmeDmaDone(0, 0);
+          if(remBytes < 0) {                    //Error
+            logMsg("ERROR during DMA transfer 0x%x\n", remBytes);
+            *rol->dabufp++ = 0xda020bad;
+          } else if(remBytes == 0) {          //Transfer completed //
+            rol->dabufp += maxWords;
+          } else {                            //Transfer Terminated
+            nWords = maxWords - (remBytes >> 2);
+            rol->dabufp += nWords;
+          }
+        }//retVal < 0
+      } else {
+        *rol->dabufp++ = CR_d[ii]->data[0];
+        //for(jj = 0; jj < 16; ++jj) *rol->dabufp++ = DP_Read(ii, jj << 10);
+      }
+    }//for NTDC
+
+    //Wait for the interupt to be over
+    ARMbusy = 1;
+    busyLoop = 0;
+    while(ARMbusy > 0 && busyLoop < 50) {
+      ARMbusy = 0;
+      ++busyLoop;
+      for(ii = 0; ii < NTDC; ++ii) {
+        if(busyFlag[ii] == 0) continue;
+
+        busyFlag[ii] = ((DP_Read(ii, DP_Bank) & 0x80000000) >> 31);
+        ARMbusy = ARMbusy + busyFlag[ii];
+      }
+    }
+
+    //Finalize
+    *rol->dabufp++ = 0xe906c0da;
+  } else if(event_ty == 6) {    //EOS event
+    for(ii = 0; ii < NTDC; ++ii) DP_Write(ii, 0xe9060001, 0x7ffe, 0x7ffe);
+    nFlushes = 0;
+    logMsg("Received EOS event! Will start off-beam transfer...\n");
+  } else if(event_ty == 10 && nFlushes < NFlushMax) {
+    //logMsg("Flush event received! Read DP ... ");
+    ++nFlushes;
+    *rol->dabufp++ = 0xe906f018;
+
+    for(ii = 0; ii < NTDC; ++ii) {
+      Cnt = DP_Read(ii, 0);
+      *rol->dabufp++ = (((TDCBoardID + (ii << 24)) & 0xffff0000) + Cnt);  //boardid, numwords
+
+      if(Cnt > 0 && Cnt < blkSize + 10) {
+        //logMsg("Will transfer %d words from TDC %d\n", Cnt, ii);
+
+        DMAaddr = TDCBoardID + (ii << 24) + 0x20000;
+        tmpaddr1 = rol->dabufp;
+        tmpaddr2 = DMAaddr;
+        if(((tmpaddr1 & 4) >> 2) != ((tmpaddr2 & 4) >> 2)) *rol->dabufp++ = 0xe906e906;
+
+        retVal = sysVmeDmaSend(rol->dabufp, DMAaddr, Cnt << 2, 0);
+        if(retVal < 0) {
+          *rol->dabufp++ = 0xda010bad;
+        } else {
+          remBytes = sysVmeDmaDone(0, 0);
+          if(remBytes < 0) {
+            *rol->dabufp++ = 0xda020bad;
+          } else if(remBytes == 0) {
+            rol->dabufp += Cnt;
+          } else {
+            nWords = Cnt - (remBytes >> 2);
+            rol->dabufp += nWords;
+          }
+        }
+      }
+
+      if(nFlushes < NFlushMax) {
+        DP_Write(ii, 0xe9060002, 0x7ffe, 0x7ffe);
+      } else {
+        DP_Write(ii, 0xe9060003, 0x7ffe, 0x7ffe);
+      }
+    }
+  }
+  %%
+
+   close bank
+   close event
+ end trigger
+
+begin done usrtrig
+
+end done
+
+begin done
+int ARMbusy, busyLoop;
+int DP_Bank;
+
+%%
+  if(event_ty == 2) {
+    for(ii = 0; ii < NTDC; ii++) {
+	  CR_HeaderInit(ii, csr);
+	  CR_TrigEnable(ii);
+    }
+    v1495_ExternalPulser(0);
+  }
+%%
+
+  # Re-enable Trigger Source here
+  s3610IntAck(TRIG_INPUT);
+end done
+
+begin status
+
+end status

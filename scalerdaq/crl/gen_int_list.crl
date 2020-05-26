@@ -1,0 +1,226 @@
+# 
+#  General User readout list
+#
+#    David Abbott, TJNAF 2000
+
+readout list GEN_USER
+#maximum 1024,512
+maximum 40000,1024
+general readout
+
+
+# A16 Address for SIS3610 Module
+const TRIG_ADDR=0x2800
+const TRIG_INPUT=1
+const S3610_MODE=1
+int count=0
+const NTDC=3
+const NScalers=3
+
+int ev_type
+int Isquared_sum=0
+int Isum=0
+int Nevts=0
+
+extern int bigendian_out;
+extern unsigned int vxTicks;
+unsigned long testgrass=0;
+
+begin download
+
+  s3610Init(TRIG_ADDR,0,0); 
+#  s3600Init(0x11113800,0,0); 
+#  scale32Init(0x08000000,0x10000,2);
+  scale32Init(0x08000000,0x10000,NScalers);
+
+# When sending to a Linux Host set bigendian_out = 0
+bigendian_out = 0;
+
+
+  log inform "User Download Executed"
+
+end download
+    
+begin prestart
+
+  variable jj, adc_id
+  int inscale
+
+
+  log inform "Entering User Prestart"
+
+  init trig source GEN
+  link async trig source GEN S3610_MODE to usrtrig and usrtrig_done
+  event type 1 then read GEN S3610_MODE
+
+  log inform "User Prestart Executed"
+#  s3600ex(0); 
+#  s3600exCoin(0);
+
+# for TDC Init 
+#  tdcInit(0x431000,0,0);
+#  tdcInit(0x431000,0x10000,NTDC);
+#  tdcInit(0x431000,0,0);
+
+
+# Activate the scaler
+%%
+
+for (inscale=0;inscale<NScalers;inscale++) {
+  scale32Enable(inscale,0);
+  scale32CLR(inscale,0,1);
+}
+
+%%
+  log inform "User Prestart DONE"
+end prestart
+
+begin end
+  int inscale
+
+%%
+
+ for (inscale=0;inscale<NScalers;inscale++) {
+     scale32Disable(inscale,0);
+ }
+
+%%
+  log inform "User End Executed"
+  CDODISABLE(GEN,S3610_MODE,TRIG_INPUT);
+end end
+
+begin pause
+
+
+
+  log inform "User Pause Executed"
+  CDODISABLE(GEN,S3610_MODE,TRIG_INPUT);
+end pause
+
+begin go
+  int currtime	  
+  int ii; 	
+  CDOENABLE(GEN,S3610_MODE,TRIG_INPUT);  
+
+  log inform "Entering User Go"
+#  s3600Status(0);
+  s3610Status(0,0);
+
+# Activate the scaler
+  log inform "2Entering User Go"
+
+end go
+
+begin trigger usrtrig
+
+
+ int ii,jj;
+ int inscale;
+
+#logMsg("EVTYPE = %d\n",EVTYPE,0,0,0,0,0);
+
+  rol->dabufp = (long *) 0;
+
+  open event type EVTYPE of BT_UI4
+  open bank EVTYPE of BT_UI4 
+  *rol->dabufp++ = 0xe906f002;
+#*rol->dabufp++ = s3600d[0]->data[0];
+//  ev_type= EVTYPE;
+
+%%
+
+//  *rol->dabufp++ = 0xe906f003;
+  *rol->dabufp++ = 0x08010000;
+  for (ii=17;ii<32;ii++) {
+    *rol->dabufp++ = s32p[0]->scaler[_I_(ii)];
+  }
+  *rol->dabufp++ = s32p[2]->scaler[_I_(16)];	
+  if(s32p[0]->scaler[_I_(21)]<1&&s32p[0]->scaler[_I_(22)]<1){ //If NOT BOS/EOS
+     Isum += s32p[0]->scaler[_I_(27)];
+     Isquared_sum += (s32p[0]->scaler[_I_(27)])*(s32p[0]->scaler[_I_(27)]);
+     Nevts++;
+  } 
+
+  if(s32p[0]->scaler[_I_(21)]>0){//BOS event
+       printf ("This is a BOS event\n");
+  	for(inscale=1;inscale<NScalers;inscale++){
+//	for(inscale=0;inscale<NScalers;inscale++){
+  	    scale32Enable(inscale,0);
+  	    scale32Clear(inscale,1);
+	}
+  }
+
+  if(s32p[2]->scaler[_I_(16)]>0){//EOS event
+   printf ("This is a EOS event\n");
+  	for(inscale=1;inscale<NScalers;inscale++){
+    	    scale32Disable(inscale,0);
+ 	}
+	for(ii=1;ii<NScalers;ii++){
+		*rol->dabufp++ = 0x08010000+ (ii*0x10000);
+	  	for (jj=0;jj<32;jj++) {
+    		    *rol->dabufp++ = s32p[ii]->scaler[_I_(jj)];
+  		}
+  }
+	//output running sums
+	*rol->dabufp++ = 0xe906f007;
+	*rol->dabufp++ = Isum;
+	*rol->dabufp++ = Isquared_sum;
+	*rol->dabufp++ = Nevts;
+	Isum = 0;
+	Isquared_sum = 0;
+	Nevts=0;
+	for(inscale=1;inscale<NScalers;inscale++){
+		scale32Enable(inscale,0);	
+  		scale32Clear(inscale,1);	
+        }
+  } 
+
+//////////////////////////// TEST GRASS 20130718////////
+//   *rol->dabufp++ = 0xe906f008;
+//   *rol->dabufp++ =s3610ReadInput(0);
+///////////////////////////////
+%%
+
+  close bank
+  close event
+#logMsg("Scaler work!!\n");
+#  scale32Print(0,0);
+#logMsg("I got the trigger!!1\n");
+
+#logMsg("Event closed\n");
+
+end trigger
+
+
+
+begin done usrtrig
+
+#  logMsg("done usrtrig\n");
+
+end done 
+
+begin done
+int inscale;
+int ii;
+
+# Re-enable Trigger Source here
+  s3610IntAck(TRIG_INPUT);
+
+# Re-activate the scaler
+%%
+
+//for (inscale=0;inscale<NScalers;inscale++) {
+  scale32Enable(0,0);
+  scale32Clear(0,1);
+//}
+
+%%
+#  logMsg("done nothing\n");
+
+end done
+
+begin status
+
+end status
+
+

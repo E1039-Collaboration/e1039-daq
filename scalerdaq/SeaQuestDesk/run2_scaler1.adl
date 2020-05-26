@@ -1,0 +1,1427 @@
+
+file {
+	name="/home/e1039daq/SeaQuestDesk/run2_scaler1.adl"
+	version=030111
+}
+display {
+	object {
+		x=0
+		y=534
+		width=760
+		height=480
+	}
+	clr=14
+	bclr=47
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		e3d2b5,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+text {
+	object {
+		x=7
+		y=7
+		width=102
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="SpillCounter"
+}
+"text update" {
+	object {
+		x=122
+		y=35
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH1"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=59
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH2"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=94
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH3"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=116
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH4"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=141
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH5"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=168
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH6"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=199
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH7"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=222
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH8"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=249
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH9"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=274
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH10"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=301
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH11"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=323
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH12"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=354
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH13"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=379
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH14"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=408
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH15"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=122
+		y=437
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH16"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=35
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH17"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=59
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH18"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=94
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH19"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=116
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH20"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=141
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH21"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=168
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH22"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=199
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH23"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=222
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH24"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=250
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH25"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=277
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH26"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=301
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH27"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=323
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH28"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=354
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH29"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=379
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH30"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=408
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH31"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=388
+		y=437
+		width=124
+		height=22
+	}
+	monitor {
+		chan="SC1_CH32"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+text {
+	object {
+		x=53
+		y=35
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="RF"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=59
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="none"
+}
+text {
+	object {
+		x=53
+		y=94
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H1XT"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=116
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H1XB"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=141
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H1YB"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=168
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H1YT"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=199
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H2XT"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=222
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H2XB"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=249
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H2YB"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=274
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H2YT"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=301
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H3XT"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=323
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H3XB"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=354
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H4XT"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=379
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H4XB"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=408
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H4Y1B"
+	align="horiz. right"
+}
+text {
+	object {
+		x=53
+		y=437
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H4Y1T"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=35
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H4Y2B"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=59
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H4Y2T"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=94
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="none"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=116
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Y1234B"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=141
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="NIM2-XTB"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=168
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="NIM1-YTB"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=199
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="NIM3Csmic"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=222
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="NIM4Beam"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=254
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Beam*InB"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=276
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="B12 "
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=301
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="B12*Busy"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=323
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="B12*RFd"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=354
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="B34"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=379
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="TrigL1"
+	align="horiz. right"
+}
+text {
+	object {
+		x=322
+		y=408
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="INHIBIT"
+	align="horiz. right"
+}
+text {
+	object {
+		x=320
+		y=437
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="BUSY"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=656
+		y=36
+		width=76
+		height=23
+	}
+	monitor {
+		chan="TURN13"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=656
+		y=59
+		width=76
+		height=23
+	}
+	monitor {
+		chan="BNCH13"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=656
+		y=84
+		width=76
+		height=23
+	}
+	monitor {
+		chan="NBSYD"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+text {
+	object {
+		x=586
+		y=36
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="TURN13"
+	align="horiz. right"
+}
+text {
+	object {
+		x=586
+		y=59
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="BUNCH13"
+	align="horiz. right"
+}
+text {
+	object {
+		x=586
+		y=84
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="NBSYD"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=680
+		y=153
+		width=76
+		height=22
+	}
+	monitor {
+		chan="DUTYFACTOR_SC"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=680
+		y=183
+		width=79
+		height=22
+	}
+	monitor {
+		chan="DUTYFACTOR_BEAM"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+text {
+	object {
+		x=530
+		y=153
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="DutyFactor SC"
+}
+text {
+	object {
+		x=520
+		y=183
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="DutyFactor QIE"
+}
+"text update" {
+	object {
+		x=388
+		y=9
+		width=115
+		height=23
+	}
+	monitor {
+		chan="G2SEM"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	format="engr. notation"
+	limits {
+		precSrc="default"
+		precDefault=2
+	}
+}
+"text update" {
+	object {
+		x=640
+		y=10
+		width=115
+		height=23
+	}
+	monitor {
+		chan="NM3SEM"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	format="engr. notation"
+	limits {
+		precSrc="default"
+		precDefault=2
+	}
+}
+text {
+	object {
+		x=320
+		y=7
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="G2SEM"
+	align="horiz. right"
+}
+text {
+	object {
+		x=570
+		y=9
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="NM3SEM"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=140
+		y=6
+		width=115
+		height=25
+	}
+	monitor {
+		chan="SPILLCOUNTER"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=655
+		y=216
+		width=76
+		height=23
+	}
+	monitor {
+		chan="TARGPOS"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+text {
+	object {
+		x=539
+		y=216
+		width=62
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="TARGPOS"
+}
+"text update" {
+	object {
+		x=660
+		y=253
+		width=76
+		height=23
+	}
+	monitor {
+		chan="BEAM_INHIBITED"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+text {
+	object {
+		x=550
+		y=253
+		width=104
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Beam Inhibit"
+	align="horiz. right"
+}
+text {
+	object {
+		x=730
+		y=253
+		width=26
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="%"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=660
+		y=278
+		width=76
+		height=23
+	}
+	monitor {
+		chan="BEAM_BUSIED"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+text {
+	object {
+		x=550
+		y=278
+		width=104
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Beam Busied"
+	align="horiz. right"
+}
+text {
+	object {
+		x=730
+		y=278
+		width=26
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="%"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=660
+		y=334
+		width=96
+		height=23
+	}
+	monitor {
+		chan="LIVE_BEAM"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	format="engr. notation"
+	limits {
+		precSrc="default"
+		precDefault=2
+	}
+}
+text {
+	object {
+		x=550
+		y=334
+		width=107
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Live G2SEM"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=660
+		y=353
+		width=96
+		height=23
+	}
+	monitor {
+		chan="LIVE_NM3SEM"
+		clr=54
+		bclr=1
+	}
+	align="horiz. right"
+	format="engr. notation"
+	limits {
+		precSrc="default"
+		precDefault=2
+	}
+}
+text {
+	object {
+		x=552
+		y=353
+		width=107
+		height=23
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Live NM3SEM"
+	align="horiz. right"
+}

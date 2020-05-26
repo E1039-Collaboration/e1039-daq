@@ -1,0 +1,158 @@
+#  Source for generic VME readout using a
+#  TJNAF trigger supervisor interface register (TIR)
+#  as a source for external interrupts
+#
+#    David Abbott, TJNAF 1996
+
+readout list VME1
+maximum 1024,500
+vme readout
+ts control
+
+const TIR_ADDR = 0x0ed0
+const LATCH_ADDR =0x09000000
+
+# Define tsP pointer even if there is no TS in the Crate
+struct vme_ts2 *tsP;
+
+extern int bigendian_out;
+
+begin download
+
+  variable res
+
+# If the ROC is sending data to Little-Endian EB
+# e.g. a x86 Linux CPU then bigendian_out = 0.
+# Unless the ROC is also running on a Little-Endian
+# machine. Then set bigendian_out=1.
+  bigendian_out = 0;
+
+
+# Setup TIR
+#  tsInit(0,0);
+  tirInit(TIR_ADDR);
+
+  latchInit(0x09000000,0x100000,1);
+
+  
+  log inform "User Download TIR Executed"
+
+end download
+    
+begin prestart
+  log inform "User Prestart TIR Executed"
+  log inform "Entering User Trigger Prestart"
+
+  init trig source VME
+  link async trig source VME 1 to usrtrig and usrtrig_done
+  event type 1 then read VME 1
+
+  latchReset(0);	
+ 
+  latchTrigDisable(0);
+ 
+  latchFifoClear(0);
+ 
+  latchTrigEnable(0);
+ 
+  log inform "Ending TIR Prestart"
+#  vmetenable(1,0);  
+
+
+  log inform "Prestart  1"
+
+  latchStatus(0);
+
+end prestart
+
+begin end
+  variable trig_count
+  
+  latchTrigDisable(0);
+
+
+# Get Final Trigger Count
+
+
+  log inform "User End Executed VME TIR"
+  CDODISABLE(VME,1,0);
+end end
+
+begin pause
+
+  log inform "User Pause Executed" 
+  CDODISABLE(VME,1,0);
+
+end pause
+
+begin go
+  CDOENABLE(VME,1,0);
+  
+  log inform "Entering User Go"
+
+  latchFifoClear(0);
+  latchReset(0);
+  latchTrigEnable(0);
+
+  log inform "Finish User Go"
+
+end go
+
+begin trigger usrtrig
+ 
+ variable ii, event_ty, event_no
+# logMsg("debug 1!!\n");
+ event_ty = EVTYPE;
+# logMsg("debug 2!!\n");
+ event_no = *rol->nevents;
+
+# logMsg("debug 3!!\n");
+
+  latchTrigDisable(0);
+
+# logMsg("debug 4!!\n");
+
+
+ rol->dabufp = (long *) 0;
+ open event type EVTYPE of BT_UI4
+
+ latchFifoStatus(0,3);
+# logMsg("debug 5!!\n");
+#  output hex da000022
+#  rol->dabufp += 20;
+#  output hex da0000ff
+# logMsg("I got a trigger!!\n");
+# logMsg("debug 6!!\n");
+
+  *rol->dabufp++ = latchd[0]->data[0];
+  *rol->dabufp++ = latchd[0]->data[0];
+
+# logMsg("debug 7!!\n");
+
+ close event
+
+
+end trigger
+
+begin done usrtrig
+  latchFifoClear(0);
+  latchTrigEnable(0);
+
+end done
+
+
+begin done
+
+# Acknowledge tir register
+  CDOACK(VME,1,0);
+  latchFifoClear(0);
+#  latchTrigEnable(0);
+
+
+end done
+
+begin status
+
+end status
+
+

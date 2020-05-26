@@ -1,0 +1,242 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Cannot create GC thread. Out of system resources.
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   In 32 bit mode, the process size limit was hit
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Use 64 bit Java on a 64 bit OS
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (gcTaskThread.cpp:45), pid=26239, tid=3078785904
+#
+# JRE version: 6.0_24-b24
+# Java VM: OpenJDK Server VM (20.0-b12 mixed mode linux-x86 )
+# Derivative: IcedTea6 1.11.3
+# Distribution: Scientific Linux release 6.2 (Carbon), package rhel-1.48.1.11.3.el6_2-i386
+
+---------------  T H R E A D  ---------------
+
+Current thread (0xb7605400):  JavaThread "Unknown thread" [_thread_in_vm, id=26240, stack(0xb77d8000,0xb7829000)]
+
+Stack: [0xb77d8000,0xb7829000],  sp=0xb7827d50,  free space=319k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [libjvm.so+0x6298a7]  JVM_handle_linux_signal+0x119b97
+V  [libjvm.so+0x629b71]  JVM_handle_linux_signal+0x119e61
+V  [libjvm.so+0x2848ee]  pthread_cond_signal+0x2848ee
+V  [libjvm.so+0x30a197]  AsyncGetCallTrace+0x289c7
+V  [libjvm.so+0x308f8c]  AsyncGetCallTrace+0x277bc
+V  [libjvm.so+0x309128]  AsyncGetCallTrace+0x27958
+V  [libjvm.so+0x520bc7]  JVM_handle_linux_signal+0x10eb7
+V  [libjvm.so+0x60599f]  JVM_handle_linux_signal+0xf5c8f
+V  [libjvm.so+0x6079b5]  JVM_handle_linux_signal+0xf7ca5
+V  [libjvm.so+0x344880]  AsyncGetCallTrace+0x630b0
+V  [libjvm.so+0x5f567c]  JVM_handle_linux_signal+0xe596c
+V  [libjvm.so+0x37e321]  JNI_CreateJavaVM+0x61
+C  [java+0x2138]  JavaMain+0x88
+C  [libpthread.so.0+0x6a09]  abort@@GLIBC_2.0+0x6a09
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+
+Other Threads:
+
+=>0xb7605400 (exited) JavaThread "Unknown thread" [_thread_in_vm, id=26240, stack(0xb77d8000,0xb7829000)]
+
+VM state:not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Dynamic libraries:
+00110000-001f1000 r-xp 00000000 fd:00 1598029    /usr/lib/libstdc++.so.6.0.13
+001f1000-001f5000 r--p 000e0000 fd:00 1598029    /usr/lib/libstdc++.so.6.0.13
+001f5000-001f7000 rw-p 000e4000 fd:00 1598029    /usr/lib/libstdc++.so.6.0.13
+001f7000-001fd000 rw-p 00000000 00:00 0 
+001fd000-0021a000 r-xp 00000000 fd:00 1720427    /lib/libgcc_s-4.4.6-20110824.so.1
+0021a000-0021b000 rw-p 0001d000 fd:00 1720427    /lib/libgcc_s-4.4.6-20110824.so.1
+00220000-0023e000 r-xp 00000000 fd:00 1702893    /lib/ld-2.12.so
+0023e000-0023f000 r--p 0001d000 fd:00 1702893    /lib/ld-2.12.so
+0023f000-00240000 rw-p 0001e000 fd:00 1702893    /lib/ld-2.12.so
+00246000-003cf000 r-xp 00000000 fd:00 1709232    /lib/libc-2.12.so
+003cf000-003d0000 ---p 00189000 fd:00 1709232    /lib/libc-2.12.so
+003d0000-003d2000 r--p 00189000 fd:00 1709232    /lib/libc-2.12.so
+003d2000-003d3000 rw-p 0018b000 fd:00 1709232    /lib/libc-2.12.so
+003d3000-003d6000 rw-p 00000000 00:00 0 
+003d8000-003db000 r-xp 00000000 fd:00 1842596    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/jli/libjli.so
+003db000-003dc000 rw-p 00002000 fd:00 1842596    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/jli/libjli.so
+003dc000-003e3000 r-xp 00000000 fd:00 1709245    /lib/librt-2.12.so
+003e3000-003e4000 r--p 00006000 fd:00 1709245    /lib/librt-2.12.so
+003e4000-003e5000 rw-p 00007000 fd:00 1709245    /lib/librt-2.12.so
+003e5000-003f0000 r-xp 00000000 fd:00 1838084    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/libverify.so
+003f0000-003f1000 rw-p 0000b000 fd:00 1838084    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/libverify.so
+003f1000-003fd000 r-xp 00000000 fd:00 1702787    /lib/libnss_files-2.12.so
+003fd000-003fe000 r--p 0000b000 fd:00 1702787    /lib/libnss_files-2.12.so
+003fe000-003ff000 rw-p 0000c000 fd:00 1702787    /lib/libnss_files-2.12.so
+00404000-00407000 r-xp 00000000 fd:00 1709275    /lib/libdl-2.12.so
+00407000-00408000 r--p 00002000 fd:00 1709275    /lib/libdl-2.12.so
+00408000-00409000 rw-p 00003000 fd:00 1709275    /lib/libdl-2.12.so
+0040b000-00422000 r-xp 00000000 fd:00 1709240    /lib/libpthread-2.12.so
+00422000-00423000 r--p 00016000 fd:00 1709240    /lib/libpthread-2.12.so
+00423000-00424000 rw-p 00017000 fd:00 1709240    /lib/libpthread-2.12.so
+00424000-00426000 rw-p 00000000 00:00 0 
+00428000-0043a000 r-xp 00000000 fd:00 1709222    /lib/libz.so.1.2.3
+0043a000-0043b000 r--p 00011000 fd:00 1709222    /lib/libz.so.1.2.3
+0043b000-0043c000 rw-p 00012000 fd:00 1709222    /lib/libz.so.1.2.3
+0043c000-00464000 r-xp 00000000 fd:00 1720426    /lib/libm-2.12.so
+00464000-00465000 r--p 00027000 fd:00 1720426    /lib/libm-2.12.so
+00465000-00466000 rw-p 00028000 fd:00 1720426    /lib/libm-2.12.so
+00466000-00488000 r-xp 00000000 fd:00 1838065    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/libjava.so
+00488000-0048a000 rw-p 00022000 fd:00 1838065    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/libjava.so
+0048a000-00490000 r-xp 00000000 fd:00 1838085    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/libzip.so
+00490000-00491000 rw-p 00005000 fd:00 1838085    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/libzip.so
+0067e000-0067f000 r-xp 00000000 00:00 0          [vdso]
+0067f000-00d17000 r-xp 00000000 fd:00 1838091    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/server/libjvm.so
+00d17000-00d6b000 rw-p 00697000 fd:00 1838091    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/server/libjvm.so
+00d6b000-01185000 rw-p 00000000 00:00 0 
+0393e000-03955000 r-xp 00000000 fd:00 1720455    /lib/libnsl-2.12.so
+03955000-03956000 r--p 00016000 fd:00 1720455    /lib/libnsl-2.12.so
+03956000-03957000 rw-p 00017000 fd:00 1720455    /lib/libnsl-2.12.so
+03957000-03959000 rw-p 00000000 00:00 0 
+08048000-08050000 r-xp 00000000 fd:00 1842199    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/bin/java
+08050000-08052000 rw-p 00007000 fd:00 1842199    /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/bin/java
+09587000-095a8000 rw-p 00000000 00:00 0          [heap]
+8cd7f000-8cd80000 ---p 00000000 00:00 0 
+8cd80000-8ce00000 rw-p 00000000 00:00 0 
+8ce00000-8ce21000 rw-p 00000000 00:00 0 
+8ce21000-8cf00000 ---p 00000000 00:00 0 
+8cf5d000-8cf5e000 ---p 00000000 00:00 0 
+8cf5e000-8cfe6000 rw-p 00000000 00:00 0 
+8cfe6000-8d01e000 rw-p 00000000 00:00 0 
+8d01e000-8d061000 rw-p 00000000 00:00 0 
+8d061000-8d0c5000 rw-p 00000000 00:00 0 
+8d0c5000-8d0cd000 rw-p 00000000 00:00 0 
+8d0cd000-8d105000 rw-p 00000000 00:00 0 
+8d105000-8d148000 rw-p 00000000 00:00 0 
+8d148000-8d1ab000 rw-p 00000000 00:00 0 
+8d1ab000-8d1cd000 rw-p 00000000 00:00 0 
+8d1cd000-8d1ff000 rw-p 00000000 00:00 0 
+8d1ff000-8e200000 rw-p 00000000 00:00 0 
+8e200000-95200000 rw-p 00000000 00:00 0 
+95200000-9d760000 rw-p 00000000 00:00 0 
+9d760000-a9f60000 rw-p 00000000 00:00 0 
+a9f60000-ae200000 rw-p 00000000 00:00 0 
+ae200000-b4600000 rw-p 00000000 00:00 0 
+b4600000-b4840000 rwxp 00000000 00:00 0 
+b4840000-b7633000 rw-p 00000000 00:00 0 
+b7633000-b7700000 ---p 00000000 00:00 0 
+b7718000-b7721000 rw-p 00000000 00:00 0 
+b7721000-b77d8000 rw-p 00000000 00:00 0 
+b77d8000-b77db000 ---p 00000000 00:00 0 
+b77db000-b782b000 rw-p 00000000 00:00 0 
+b783a000-b7842000 rw-s 00000000 fd:00 2109431    /tmp/hsperfdata_e906daq/26239
+b7842000-b7843000 rw-p 00000000 00:00 0 
+b7843000-b7844000 r--p 00000000 00:00 0 
+b7844000-b7845000 rw-p 00000000 00:00 0 
+bfd9e000-bfdb4000 rw-p 00000000 00:00 0          [stack]
+
+VM Arguments:
+jvm_args: -Xms200m -Xmx500m -DproxySet=true -DproxyHost=jprox.jlab.org -DproxyPort=8080 
+java_command: org.jlab.coda.afecs.ui.rcgui.RcGuiApplication
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0
+CLASSPATH=/usr/local/coda/2.6.1/afecs/afecs-1.4.jar:/usr/local/coda/2.6.1/afecs/lib/*
+PATH=/usr/local/coda/2.6.1/afecs/bin:/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/bin:/usr/local/coda/2.6.1/Linux/bin:/usr/krb5/bin:/data2/epics/bin/linux-x86:/data2/e906daq/seaquest-daq/SlowControl/scripts/acnet:/usr/local/coda/2.6.1/afecs/bin:/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/bin:/usr/krb5/bin:/data2/epics/bin/linux-x86:/data2/e906daq/seaquest-daq/SlowControl/scripts/acnet:/usr/lib/qt-3.3/bin:/usr/local/bin:/usr/bin:/bin:.:/etc/xinetd.d:/usr/bin:/sbin:/usr/local/gnu/x86-linux/bin:/home/e906daq/coda/2.6/extensions/slow_control/insert/Abbott/codadp:.:/usr/local/gnu/x86-linux/bin:/data2/root/5.24_32/bin:/data2/epics/bin/linux-x86:/home/e906daq/seaquest-daq/ControlRoomScripts:.:/etc/xinetd.d:/usr/bin:/sbin:/usr/local/gnu/x86-linux/bin:/home/e906daq/coda/2.6/extensions/slow_control/insert/Abbott/codadp:.:/usr/local/gnu/x86-linux/bin:/data2/root/5.24_32/bin:/data2/epics/bin/linux-x86:/home/e906daq/seaquest-daq/ControlRoomScripts
+USERNAME=e906daq
+LD_LIBRARY_PATH=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386/server:/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/lib/i386:/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/../lib/i386:/data2/root/5.24_32/lib/:/data2/root/5.24_32/lib/:/usr/local/coda/2.6.1/cMsg/Linux-i686/lib:/usr/local/coda/2.6.1/Linux/lib:/usr/local/coda/2.6.1/cdev_1.7.5/lib/Linux:/data2/CLHEP/lib:/usr/local/coda/2.6.1/cMsg/Linux-i686/lib:/usr/local/coda/2.6.1/Linux/lib:/usr/local/coda/2.6.1/cdev_1.7.5/lib/Linux:/data2/CLHEP/lib
+SHELL=/bin/tcsh
+DISPLAY=:0.0
+HOSTTYPE=i386-linux
+OSTYPE=linux
+MACHTYPE=i386
+
+Signal Handlers:
+SIGSEGV: [libjvm.so+0x62a5a0], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGBUS: [libjvm.so+0x62a5a0], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGFPE: [libjvm.so+0x509c60], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGPIPE: [libjvm.so+0x509c60], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGXFSZ: [libjvm.so+0x509c60], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGILL: [libjvm.so+0x509c60], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGUSR1: SIG_DFL, sa_mask[0]=0x00000000, sa_flags=0x00000000
+SIGUSR2: [libjvm.so+0x509400], sa_mask[0]=0x00000000, sa_flags=0x10000004
+SIGHUP: SIG_DFL, sa_mask[0]=0x00000000, sa_flags=0x00000000
+SIGINT: SIG_DFL, sa_mask[0]=0x00000000, sa_flags=0x00000000
+SIGTERM: SIG_DFL, sa_mask[0]=0x00000000, sa_flags=0x00000000
+SIGQUIT: SIG_DFL, sa_mask[0]=0x00000000, sa_flags=0x00000000
+
+
+---------------  S Y S T E M  ---------------
+
+OS:Scientific Linux Fermi release 6.2 (Ramsey)
+
+uname:Linux 2.6.32-220.el6.i686 #1 SMP Sat Dec 10 17:47:51 EST 2011 i686
+libc:glibc 2.12 NPTL 2.12 
+rlimit: STACK 10240k, CORE 0k, NPROC 1024, NOFILE 1024, AS infinity
+load average:0.08 0.11 0.17
+
+/proc/meminfo:
+MemTotal:        8171552 kB
+MemFree:          196648 kB
+Buffers:          222556 kB
+Cached:          5661932 kB
+SwapCached:        19872 kB
+Active:          2300492 kB
+Inactive:        5381328 kB
+Active(anon):    1668064 kB
+Inactive(anon):   214412 kB
+Active(file):     632428 kB
+Inactive(file):  5166916 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+HighTotal:       7470536 kB
+HighFree:          43788 kB
+LowTotal:         701016 kB
+LowFree:          152860 kB
+SwapTotal:      10403832 kB
+SwapFree:       10311460 kB
+Dirty:               392 kB
+Writeback:             0 kB
+AnonPages:       1785180 kB
+Mapped:           145080 kB
+Shmem:             85124 kB
+Slab:             189228 kB
+SReclaimable:     157028 kB
+SUnreclaim:        32200 kB
+KernelStack:       10312 kB
+PageTables:        26456 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    14489608 kB
+Committed_AS:    8579896 kB
+VmallocTotal:     122880 kB
+VmallocUsed:       21852 kB
+VmallocChunk:      89588 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:       12280 kB
+DirectMap2M:      894976 kB
+
+
+CPU:total 4 (4 cores per cpu, 1 threads per core) family 6 model 23 stepping 10, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1
+
+Memory: 4k page, physical 8171552k(196648k free), swap 10403832k(10311460k free)
+
+vm_info: OpenJDK Server VM (20.0-b12) for linux-x86 JRE (1.6.0_24-b24), built on Jun 13 2012 10:12:16 by "mockbuild" with gcc 4.4.6 20110731 (Red Hat 4.4.6-3)
+
+time: Thu Jun 16 04:11:16 2016
+elapsed time: 0 seconds
+

@@ -1,0 +1,17 @@
+-  Use ET_STATION_BLOCKING, run from e906daq4, and make sure et_netclient 
+starts with a NEW station before run begins.  (tried with station name kaz924351
+In this config, if data is written to disk, data-taking slows down for coda.
+-  restarting coda seems to delete all stations and allow for a fresh restart
+(except GrandCentral, which is inherent)
+-  tried kaz924352 after coda was started, but before prestart/go.  Slowdown
+seen
+-  tried kaz924353 after prestart/go.  Slowdown seen.  
+
+Try increasing the buffer in the overall et system.
+
+In PreCoda, the et_start options are:
+usage: et_start -v [-n events] [-s event_size] [-f file]
+
+-n events is the number of buffers available (default=300, as defined in et.h)
+-s event_size is the size of a buffer in bytes (default=1000, as defined in et.h)
+-f file is the name of the et system (default=et_sys_Sea2, under /tmp)

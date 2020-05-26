@@ -1,0 +1,33 @@
+#######################################
+## QIE Register Reset file
+########################################
+## Each line directs code to set QIE register to a value using format:
+##   Name_with_no_space  registy_location(hex)  value(hex)
+##
+## blank lines are skipped
+## lines starting with '#' are comments
+########################################
+#
+# spill length changed from 5A168 to 5CC60 (Feb 6,2017) --> back to original
+#
+##Name  registy_location(hex)  value(hex)
+##---------------------------------------
+Register_0		0	321
+Inhibit_output_delay	3	23
+QIE_Inhibit_delay	4	2d
+Min_Inhibit_width	5	10
+Inhibit_Threshold	6	300
+QIE_Busy_delay		7	34
+QIE_Orbit_delay		8	1f40
+Spill_Length_19_16	9	5
+Spill_Length_15_0	a	a168
+Marker_delay		b	146
+QIE_phase_adjust	c	4
+Trigger_block_length	d	18
+Trigger_block_PL_delay	e	58
+Pedestal_register	1e	24
+Pedestal_variance	1f	20
+GPO0_turn_HI		50	0
+GPO0_turn_LO		51	b18f
+GPO0_RF_offset		52	10
+

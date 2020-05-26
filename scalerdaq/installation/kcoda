@@ -1,0 +1,213 @@
+#!/bin/sh
+#
+# Kill off all CODA related jobs to make a clean start
+# March, 2000   R. Michaels
+#
+#-----------------------------------------------------
+
+DEBUG=0
+nlp=0
+
+function reminder
+{
+
+computer=`uname -a | awk '{ print $2 }'`
+os=`uname -a | awk '{ print $1 }'`
+
+echo " "
+echo "Finished 'kcoda' on $(whoami), computer = $computer, OS = $os"
+echo "(This should be a-onl, adaql2, Linux.)"
+echo " "
+echo "If you've used 'startcoda', this will do steps 1-4"
+echo " "
+echo "  1. Start 'rcServer' interactively before starting anything else."
+echo "  2. Start 'coda_er' interactively like this:"
+echo "coda_er -i -s $SESSION -n ER1 -t ER -f ~/scripts/bobfile.tcl"
+echo "  3. Start 'coda_eb' interactively if you want to watch for"
+echo "     synch error messages like 'event type mismatch'."
+echo "coda_eb -i -s $SESSION -n EB1 -t EB"
+echo "  4. Start 'runcontrol'"
+echo " "
+echo "then "
+echo "  5. In runcontrol after 'Configure', press 'Reset' before 'Download'"
+echo " "
+
+}
+
+
+function reminder0
+{
+
+computer=`uname -a | awk '{ print $2 }'`
+os=`uname -a | awk '{ print $1 }'`
+
+echo " "
+echo "Finished 'kcoda' on $(whoami), computer = $computer, OS = $os"
+echo "(This should be a-onl, adaql2, Linux.)"
+echo " "
+echo "To restart, REMEMBER to do the following (each in different window):"
+echo "(But... this is all done for you by the scripts 'startcoda')"
+echo " "
+echo "  1. Start 'rcServer' interactively before starting anything else."
+echo "  2. Start 'coda_er' interactively like this:"
+echo "coda_er -i -s $SESSION -n ER1 -t ER -f ~/scripts/bobfile.tcl"
+echo "  3. Start 'coda_eb' interactively if you want to watch for"
+echo "     synch error messages like 'event type mismatch'."
+echo "coda_eb -i -s $SESSION -n EB1 -t EB"
+echo "  4. Start 'runcontrol'"
+echo "  5. In runcontrol after 'Configure', press 'Reset' before 'Download'"
+echo " "
+echo "=> If RUNCONTROL STUCK: wait 1 min, then 'Cancel', 'Reset', 'Download'"
+echo " "
+}
+
+
+function killproc
+{
+proc_to_kill=$1
+if [ $DEBUG -eq 1 ] ; then
+      echo "killproc with num args $#"
+fi
+if [ $# -eq 1 ] ; then
+    killit $1
+fi
+if [ $# -eq 2 ] ; then
+    killit $1 $2
+fi
+if [ $# -eq 3 ] ; then
+    killit $1 $2 $3
+fi
+if [ $# -ge 4 ] ; then
+    killit $1 $2 $3 $4
+fi
+
+}
+   
+
+function killit
+{
+# Function to kill a process containing a $proc_to_kill as long
+# as id doesnt belong to another process containing $proc2,$proc3,
+# $proc4, grep or the present PID.
+#
+proc_to_kill=$1
+proc2=""
+proc3=""
+proc4=""
+pid1=grep
+pid2=grep
+pid3=grep
+pid4=grep
+if [ $# -ge 2 ] ; then
+   proc2=$2
+else
+   proc2=grep
+fi
+if [ $# -ge 3 ] ; then
+   proc3=$3
+else
+   proc3=grep
+fi
+if [ $# -ge 4 ] ; then
+   proc4=$4
+else
+   proc4=grep
+fi
+
+if [ $DEBUG -eq 1 ] ; then
+  echo "killproc -- to kill $proc_to_kill"
+  echo "  to avoid $proc1 $proc2 $proc3 $proc4"
+  echo "  this pid = $thispid"
+fi
+
+ifind=1
+while [ 1 = 1 ] ; do
+   if [ $DEBUG -eq 1 ]  ; then
+      echo "ifind = $ifind"
+   fi
+   if [ $ifind -eq 0 ] ; then
+      return
+   fi
+   ifind=0
+   n=0
+   kone
+done
+}
+
+function kone
+{
+for word in `ps awx|grep -i $proc_to_kill|grep -v grep|grep -v $proc2|grep -v $proc3|grep -v $proc4|grep -v $pid1|grep -v $pid2|grep -v $pid3|grep -v $pid4|grep -v $thispid`
+   do 
+       if [ $DEBUG -eq 1 ] ; then
+          echo "word, n   $word   $n"
+       fi
+       let n=n+1
+       if [ $n = 1 ]
+             then {
+                 if `kill -9 $word` ; then
+                    ifind=1
+                    if [ $DEBUG -eq 1 ] ; then
+                       echo "killing job id  $word"
+                    fi
+                   return
+                 else
+                   let nlp=nlp+1
+                   echo "Cannot kill this job, skipping it..."
+                   if [ $nlp -eq 1 ] ; then
+                       pid1=$word
+                   fi
+                   if [ $nlp -eq 2 ] ; then
+                       pid2=$word
+                   fi
+                   if [ $nlp -eq 3 ] ; then
+                       pid3=$word
+                   fi
+                   if [ $nlp -eq 4 ] ; then
+                      echo "Fatal error of kcoda... exit"
+                      echo "Probably another user trying to run coda"
+                      echo "If necessary, kill -9 stuff by hand."
+                      exit
+                   fi
+                   return
+                 fi
+             }
+       fi
+done
+}
+
+
+
+#------------------------------------------
+# Main routine
+
+
+thispid=$$
+
+echo "Killing all coda processes..."
+
+killproc coda_eb xterm emacs
+killproc coda_er xterm emacs
+killproc rcServer xterm emacs
+killproc coda_roc xterm emacs
+killproc runcontrol xterm emacs
+killproc codaedit emacs
+killproc getscaler emacs
+killproc epicsL emacs
+killproc fastE emacs
+killproc caget emacs
+killproc cmlog emacs
+killproc et_start emacs
+killproc looper emacs
+killproc etserver emacs
+killproc epicsEnd emacs
+killproc msqld emacs
+killproc platform xterm emacs 
+
+
+rm -f /tmp/et_sys_$SESSION
+#et_start -n 1500 -s 20000 &
+
+
+echo "All done"
+
+#reminder

@@ -1,0 +1,8 @@
+###############################################
+# This is the cron for user e906daq on machine e906daq1
+###############################################
+#min hour day-of-month month day-of-week COMMAND
+
+#every 4 hours, save the logbook
+00 0,4,8,12,16,20 * * * /home/e906daq/bin/backup_logfile.py
+

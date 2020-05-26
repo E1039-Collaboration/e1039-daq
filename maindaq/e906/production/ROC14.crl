@@ -1,0 +1,340 @@
+#vme_tir_tdc2_st12_v1495_ZSBLK.crl
+#  Source for generic VME readout using a
+#  TJNAF trigger supervisor interface register (TIR)
+#  as a source for external interrupts
+#
+#    David Abbott, TJNAF 1996
+
+readout list VME1
+#maximum 1024,500
+#maximum 30000,3000
+#maximum 5129,60 # this crashes coda for some reason (probably too small) --kaz
+#maximum 22753,100
+maximum 30000,150
+#maximum <buffer size per event(in bytes)> <number of buffer to create>
+vme readout
+ts control
+const NTDC=5
+const V1495TDC_on=0
+const V1495splatBlock_on=1
+# TDC 1,2 for st1,  TDC 3,4 for st2
+
+const NV1495=5;
+int V_DELAY[5];
+
+const TIR_ADDR = 0x0ed0;
+const LATCH_ADDR =0x09100000;
+int ii;
+# Define tsP pointer even if there is no TS in the Crate
+struct vme_ts2 *tsP;
+extern unsigned int vxTicks;
+int event_ty;
+int CSR2_A[NTDC];
+extern int bigendian_out;
+
+begin download
+
+  variable res
+
+# If the ROC is sending data to Little-Endian EB
+# e.g. a x86 Linux CPU then bigendian_out = 0.
+# Unless the ROC is also running on a Little-Endian
+# machine. Then set bigendian_out=1.
+  bigendian_out = 0;
+
+
+# Setup TIR
+#  tsInit(0,0);
+  tirInit(TIR_ADDR);
+
+ 
+ dsTdcInit(LATCH_ADDR,0x100000,NTDC);
+  
+  log inform "User Download TIR Executed"
+
+end download
+    
+begin prestart
+  log inform "User Prestart TIR Executed"
+  log inform "Entering User Trigger Prestart"
+
+  init trig source VME
+  link async trig source VME 1 to usrtrig and usrtrig_done
+  event type 1 then read VME 1
+
+ 
+  log inform "Ending TIR Prestart"
+#  vmetenable(1,0);
+%%
+for (ii=0;ii<NTDC-1;ii++){ 	  
+  dsTdcReset(ii);
+
+// dsTdcp[ii]->csr2=0x10e01;	//delay time set, 32clock, delay 400ns  --new v1495 trigger - 120 ns upstream to match fpga trigger
+//  dsTdcp[ii]->csr2=0x11401;	//delay time set, 32clock, delay 400ns  --new v1495 trigger
+//  dsTdcp[ii]->csr2=0x11101;	//delay time set, 32clock, delay 400ns  --new v1495 trigger
+
+//following disabled by kaz
+  CSR2_A[ii]=0x11101;	//delay time set, 32clock, delay 400ns  --new v1495 trigger
+
+  dsTdcp[ii]->csr2= CSR2_A[ii];
+
+}
+	dsTdcReset(4);	
+//	dsTdcp[4]->csr2= 0x11f01; // trigger matrix outputs to this TDC
+	CSR2_A[4]=0x11f01; // trigger matrix outputs to this TDC
+	dsTdcp[4]->csr2= CSR2_A[4];
+
+for (ii=0;ii<NTDC;ii++){ 
+  dsTdcTrigDisable(ii);
+  dsTdcFifoClear(ii);
+  dsTdcEdgeMode(ii,2);	
+//  dsTdcTrigEnable(ii);		
+  dsTdcStatus(ii);
+}
+ 
+  v1495Init(0x04400000,0x100000,NV1495);
+
+  V_DELAY[0]=0x0235;
+  V_DELAY[1]=0x0235;
+  V_DELAY[2]=0x0235;
+  V_DELAY[3]=0x0235;
+  V_DELAY[4]=0x021c;
+
+  for (ii=0;ii<NV1495;ii++){ 
+    if (V1495TDC_on!=0){	
+      V_DELAY[ii]=V_DELAY[ii]+0x1000;
+    }
+    if (V1495splatBlock_on!=0){	
+      V_DELAY[ii]=V_DELAY[ii]+0x2000;
+    }
+
+    v1495Timeset(96,ii,1000);
+    v1495TimewindowSet(ii,V_DELAY[ii]);
+
+//   440 nonbend up
+   v1495ScWrite(0,1,255);
+   v1495ScWrite(0,2,255);
+   v1495ScWrite(0,3,255);
+   v1495ScWrite(0,4,255);
+//    450 nonbend down
+   v1495ScWrite(1,1,255);
+   v1495ScWrite(1,2,255);
+   v1495ScWrite(1,3,255);
+   v1495ScWrite(1,4,255);
+//   460 bend up
+   v1495ScWrite(2,1,255);
+   v1495ScWrite(2,2,255);
+   v1495ScWrite(2,3,255);
+   v1495ScWrite(2,4,255);
+//   470 bend down
+   v1495ScWrite(3,1,255);
+   v1495ScWrite(3,2,255); 
+   v1495ScWrite(3,3,255);
+   v1495ScWrite(3,4,255);
+//   480 level 2
+//  v1495ScWrite(4,1,0);
+//  v1495ScWrite(4,2,0); 
+//  v1495ScWrite(4,3,0);
+//  v1495ScWrite(4,4,0);
+
+//    v1495TimewindowSet(ii,0xa);	
+ //	logMsg("V_DELAY %d=0x%x\n",ii,V_DELAY[ii]);	
+  } 
+
+
+%%
+
+  log inform "Prestart  1"
+
+end prestart
+
+begin end
+  variable trig_count
+%%
+for (ii=0;ii<NTDC;ii++){ 	  
+  dsTdcTrigDisable(ii);
+
+}
+%%
+# Get Final Trigger Count
+  CDODISABLE(VME,1,0);
+
+  log inform "User End Executed VME TIR"
+
+end end
+
+begin pause
+
+  log inform "User Pause Executed" 
+  CDODISABLE(VME,1,0);
+
+end pause
+
+begin go
+  CDOENABLE(VME,1,0);
+  
+  log inform "Entering User Go"
+%%
+for (ii=0;ii<NTDC;ii++){ 	  
+//  dsTdcTrigDisable(ii);
+//  dsTdcFifoClear(ii);
+   dsTdcTrigEnable(ii);
+}
+
+for (ii=0;ii<NV1495;ii++){ 
+   v1495Run(ii);
+}
+
+%%
+  log inform "Finish User Go"
+
+end go
+
+begin trigger usrtrig
+ 
+ variable ii,iii,itmp,  event_no,data_addr,retVal,ZeroFlag,maxWords,nWords,remBytes,TmpV1495Count
+ long tmpdata[64];
+ event_ty = EVTYPE;
+ event_no = *rol->nevents;
+ rol->dabufp = (long *) 0;
+ open event type EVTYPE of BT_UI4
+ open bank EVTYPE of BT_UI4 
+
+#  output hex da000022
+#  rol->dabufp += 20;
+#  output hex da0000ff
+# logMsg("I got a trigger!!\n");
+
+
+  *rol->dabufp++ = vxTicks;
+#  *rol->dabufp++ = NTDC;
+
+%%	
+if (event_ty ==14){
+  for (ii=0;ii<NTDC;ii++){ 	  
+    dsTdcTrigDisable(ii);
+  }
+
+  for (ii=0;ii<NTDC;ii++){ 
+// data scaler flag=3, ignore = 0, latch=1, tdc=2,dsTDC2 flag=4, v1495=5,ZStdc=6,noZSWC=7,ZSWC=8
+    *rol->dabufp++ =0xe906f006;
+    *rol->dabufp++ = dsTdcBroadID(LATCH_ADDR,0x100000,ii);
+
+    data_addr=dsTdcBroadID(LATCH_ADDR,0x100000,ii);
+    data_addr=0x100+data_addr;
+  //  *rol->dabufp++ =	data_addr;
+    *rol->dabufp++ = dsTdcp[ii]->csr2;
+   *rol->dabufp++ = dsTdcd[ii]->data[0];	
+     maxWords =64; //8 clocks depth	
+     nWords=0;
+     ZeroFlag=0;
+
+     for(iii=1;iii<=4;iii++){// hodos - 4 for 32clock, 8 for 64clock
+//	retVal = sysVmeDmaSend(rol->dabufp,data_addr,(maxWords<<2), 0);
+	retVal = sysVmeDmaSend(tmpdata,data_addr,(maxWords<<2), 0);
+
+
+        //   logMsg("DMA transfer Initialization 0x%x\n",retVal,0,0,0,0,0);
+
+        if(retVal < 0) {
+          logMsg("ERROR in DMA transfer Initialization 0x%x\n",retVal,0,0,0,0,0);
+          *(rol->dabufp)++ = 0xda010bad;
+	} else {
+	  remBytes = sysVmeDmaDone(0,0);
+ 	  if(remBytes < 0) {                    //Error
+	     logMsg("ERROR during DMA transfer 0x%x\n",0,0,0,0,0,0);
+	     *(rol->dabufp)++ = 0xda020bad;
+	  }
+        }//if retVal 
+
+	for(itmp=0;itmp<64;itmp++){
+         
+          if((tmpdata[itmp] ==0)&&(ZeroFlag!=0)){
+	    ZeroFlag=0;	
+	  } 
+          if(tmpdata[itmp] !=0){
+            if(ZeroFlag==0){
+              *rol->dabufp++ = 0xe906d000+nWords;
+              ZeroFlag=1;
+            }
+            *rol->dabufp++ = tmpdata[itmp];	
+          }
+	  nWords++;	 
+        }//loop itmp
+
+
+     }//for iii=4
+     *rol->dabufp++ =0xe906c0da;
+  }//for NTDC
+
+
+ if (V1495TDC_on!=0){
+
+//  *rol->dabufp++ =	NV1495;
+  TmpV1495Count=0x1495fa11;
+
+  for (ii=0;ii<NV1495;ii++){ 	
+// data scaler flag=3, ignore = 0, latch=1, tdc=2,dsTDC2 flag=4, v1495=5
+    *rol->dabufp++ =0xe906f005;
+//    *rol->dabufp++ =0xe906f000;
+
+    *rol->dabufp++ =   v1495RevisionRead(ii);   // broad id read   
+/////    *rol->dabufp++ =   v1495TimewindowRead(ii);  // Delay time, no needed right now!!
+
+    TmpV1495Count=v1495TDCcount(ii); 
+    *rol->dabufp++ = TmpV1495Count ;       //# ofword in buffer
+
+
+    *rol->dabufp++ =   v1495CommonstopRead(ii); //trigger timing information
+    if (TmpV1495Count!=0xd1ad){      	
+      for(iii=0;iii<TmpV1495Count;iii++){
+	 *rol->dabufp++ = v1495TDCReadout(ii,iii);
+      }
+    }
+
+
+  }//for 
+ }//  if V1495TDC_on!=0{
+
+
+}
+%%
+
+
+ close bank
+ close event
+
+
+end trigger
+
+begin done usrtrig
+%%
+if(event_ty ==14){
+  for (ii=0;ii<NTDC;ii++){
+//    dsTdcFifoClear(ii);
+    dsTdcTrigEnable(ii);
+ }
+}
+if (V1495TDC_on!=0){
+ for (ii=0;ii<NV1495;ii++){
+  v1495Run(ii);
+ }
+}
+
+%%
+
+
+end done
+
+
+begin done
+# Acknowledge tir register
+
+  CDOACK(VME,1,0);
+end done
+
+begin status
+
+end status
+
+
